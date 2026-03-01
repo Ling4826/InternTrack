@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="th">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="style.css">
+        <title>test</title>
+        <script
+            src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+             <script src="script.js"></script>
+    </head>
+    <body>
+      <!-- ══════════ SCREEN 3: APP ══════════ -->
+<div id="screen-app" class="screen app-screen active">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo"><div class="sb-logo-text">⚡ InternTrack</div><div class="sb-logo-sub">Internship Management</div></div>
+    <div class="sb-role-badge rb-s" id="sb-badge">🎒 นักศึกษา</div>
+    <nav class="sb-nav" id="sb-nav"></nav>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-ava ava-t" id="sb-ava">ส</div>
+        <div><div class="sb-uname" id="sb-uname">ผู้ใช้</div><div class="sb-urole" id="sb-urole">นักศึกษา</div></div>
+        <button class="sb-logout" onclick="doLogout()" title="ออกจากระบบ">⏻</button>
+      </div>
+    </div>
+  </aside>
+  <!-- MAIN -->
+  <div class="app-main">
+    <header class="topbar">
+      <div class="tb-title" id="tb-title">Dashboard</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="tb-search"><span style="font-size:13px;color:var(--text3)">🔍</span><input type="text" placeholder="ค้นหา..." id="search-inp" oninput="handleSearch()"></div>
+        <div class="notif-btn">🔔<div class="notif-dot"></div></div>
+        <button class="btn btn-teal btn-sm" id="tb-action-btn" onclick="tbAction()">+ เพิ่ม</button>
+      </div>
+    </header>
+    <div class="content-area" id="content-area">
+
+      <!-- ─── STUDENT: DASHBOARD ─── -->
+      <div class="panel" id="panel-s-dash">
+        <div class="pg-head"><h2>🏠 Dashboard นักศึกษา</h2><p id="s-welcome-msg">ยินดีต้อนรับ! ดูภาพรวมการฝึกงานของคุณ</p></div>
+        <div class="stat-grid">
+          <div class="stat-box sb1"><div class="stat-ico">📝</div><div class="stat-lbl">บันทึกที่ส่ง</div><div class="stat-val" id="sd-diaries">0</div><div class="stat-sub">รายการ</div></div>
+          <div class="stat-box sb2"><div class="stat-ico">⏰</div><div class="stat-lbl">ชั่วโมงรวม</div><div class="stat-val" id="sd-hours">0</div><div class="stat-sub">ชั่วโมง</div></div>
+          <div class="stat-box sb3"><div class="stat-ico">📅</div><div class="stat-lbl">สัปดาห์ที่</div><div class="stat-val">8</div><div class="stat-sub">จาก 12 สัปดาห์</div></div>
+          <div class="stat-box sb4"><div class="stat-ico">⭐</div><div class="stat-lbl">คะแนนล่าสุด</div><div class="stat-val" id="sd-score" style="color:var(--teal)">—</div><div class="stat-sub">จากอาจารย์</div></div>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">⏰ เช็คอินวันนี้</div></div>
+            <div class="card-body" style="text-align:center;padding:24px">
+              <div style="font-family:'Kanit';font-size:46px;font-weight:900;color:var(--teal);letter-spacing:-2px;line-height:1" id="d-clock">--:--:--</div>
+              <div style="font-size:12px;color:var(--text2);margin-top:5px;margin-bottom:18px" id="d-date-lbl">--</div>
+              <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                <button class="btn btn-teal btn-sm" id="d-ci-btn" onclick="checkIn()">🟢 เช็คอินเข้างาน</button>
+                <button class="btn btn-danger btn-sm" id="d-co-btn" onclick="checkOut()" style="display:none">🔴 เช็คเอาท์ออกงาน</button>
+              </div>
+              <div style="display:flex;gap:20px;justify-content:center;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)">
+                <div><div style="font-family:'Kanit';font-size:17px;font-weight:800;color:var(--emerald)" id="d-in-t">—</div><div style="font-size:10px;color:var(--text3)">เวลาเข้า</div></div>
+                <div><div style="font-family:'Kanit';font-size:17px;font-weight:800;color:var(--rose)" id="d-out-t">—</div><div style="font-size:10px;color:var(--text3)">เวลาออก</div></div>
+                <div><div style="font-family:'Kanit';font-size:17px;font-weight:800;color:var(--teal)" id="d-worked">0 ชม.</div><div style="font-size:10px;color:var(--text3)">วันนี้</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">📋 บันทึกล่าสุด</div><button class="btn btn-sm btn-outline" onclick="switchPanel('s-diary')">ดูทั้งหมด →</button></div>
+            <div class="card-body" style="max-height:250px;overflow-y:auto" id="sd-recent"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">📅 การส่งบันทึกสัปดาห์นี้</div></div>
+          <div class="card-body">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <span style="font-size:10px;color:var(--text3)">จ</span><span style="font-size:10px;color:var(--text3)">อ</span><span style="font-size:10px;color:var(--text3)">พ</span><span style="font-size:10px;color:var(--text3)">พฤ</span><span style="font-size:10px;color:var(--text3)">ศ</span><span style="font-size:10px;color:var(--text3)">ส</span><span style="font-size:10px;color:var(--text3)">อา</span>
+            </div>
+            <div class="att-grid" id="s-week-grid"></div>
+            <div style="display:flex;gap:18px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--text2)">
+              <span>✅ ส่งแล้ว: <strong id="wk-sent" style="color:var(--emerald)">0</strong></span>
+              <span>⏳ เหลือ: <strong id="wk-left" style="color:var(--amber)">5</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── STUDENT: DIARY ─── -->
+      <div class="panel" id="panel-s-diary">
+        <div class="pg-head"><h2>📝 บันทึกประจำวัน</h2><p>บันทึกกิจกรรมและสิ่งที่เรียนรู้ทุกวัน อาจารย์จะตรวจสอบและ comment ได้</p></div>
+        <div class="diary-hdr">
+          <span style="font-size:13px;color:var(--teal);font-weight:700">📅</span>
+          <input type="date" id="diary-date" class="diary-date-inp">
+          <span id="diary-wday" style="font-size:12px;color:var(--text2)"></span>
+          <div style="margin-left:auto;font-size:11px;color:var(--text3)" id="d-char">0 ตัวอักษร</div>
+        </div>
+        <div class="grid2">
+          <div>
+            <div class="card">
+              <div class="card-head"><div class="card-title">✏️ กรอกบันทึก</div></div>
+              <div class="card-body">
+                <div class="fg"><label class="fl2">หัวข้อสรุปวันนี้ <span>*</span></label><input class="fi3" id="d-title" type="text" placeholder="สรุปงานที่ทำในวันนี้..."></div>
+                <div class="fg"><label class="fl2">งานที่ทำวันนี้ <span>*</span></label><textarea class="fi3" id="d-work" rows="4" placeholder="อธิบายงานโดยละเอียด..." oninput="updateDiaryCount()"></textarea></div>
+                <div class="form-row2">
+                  <div class="fg"><label class="fl2">สิ่งที่เรียนรู้</label><textarea class="fi3" id="d-learn" rows="3" placeholder="ความรู้ใหม่..."></textarea></div>
+                  <div class="fg"><label class="fl2">ปัญหา / แผนต่อ</label><textarea class="fi3" id="d-prob" rows="3" placeholder="อุปสรรค + แผน..."></textarea></div>
+                </div>
+                <div class="form-row2">
+                  <div class="fg"><label class="fl2">ชั่วโมงทำงาน</label><select class="fi3" id="d-hrs"><option>4</option><option>5</option><option>6</option><option selected>7</option><option>8</option><option>9</option></select></div>
+                  <div class="fg"><label class="fl2">ระดับความยาก</label><select class="fi3" id="d-diff"><option>ง่าย</option><option selected>ปกติ</option><option>ยาก</option><option>ยากมาก</option></select></div>
+                </div>
+                <div class="fg"><label class="fl2">ความรู้สึกวันนี้</label>
+                  <div class="mood-sel" id="mood-sel">
+                    <button class="mood-opt" onclick="pickMood(this,'😊')" title="ดีมาก">😊</button>
+                    <button class="mood-opt sel" onclick="pickMood(this,'🙂')" title="ดี">🙂</button>
+                    <button class="mood-opt" onclick="pickMood(this,'😐')" title="ปกติ">😐</button>
+                    <button class="mood-opt" onclick="pickMood(this,'😔')" title="เหนื่อย">😔</button>
+                    <button class="mood-opt" onclick="pickMood(this,'😵')" title="ยากมาก">😵</button>
+                  </div>
+                </div>
+                <div class="fg"><label class="fl2">ทักษะที่ฝึก <small style="text-transform:none;letter-spacing:0;color:var(--text3)">(Enter เพิ่ม)</small></label>
+                  <div style="display:flex;gap:7px"><input class="fi3" id="skill-inp" type="text" placeholder="เช่น React, SQL, Git..." onkeydown="if(event.key==='Enter'){event.preventDefault();addSkill()}"><button class="btn btn-outline btn-sm" onclick="addSkill()">+</button></div>
+                  <div class="skill-tags" id="skill-tags"><div class="skill-chip">JavaScript <span class="rm" onclick="this.parentElement.remove()">×</span></div></div>
+                </div>
+                <div style="display:flex;gap:9px;margin-top:6px;flex-wrap:wrap">
+                  <button class="btn btn-outline btn-sm" onclick="saveDraft()">💾 ร่าง</button>
+                  <button class="btn btn-teal" onclick="submitDiary()">📤 ส่งบันทึก</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-head"><div class="card-title">📚 บันทึกที่ผ่านมา</div><span style="font-size:11px;color:var(--text2)" id="diary-cnt">0 รายการ</span></div>
+              <div style="max-height:540px;overflow-y:auto;padding:14px" id="diary-hist"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── STUDENT: ATTENDANCE ─── -->
+      <div class="panel" id="panel-s-att">
+        <div class="pg-head"><h2>⏰ เวลาเข้า-ออกงาน</h2><p>บันทึกและดูประวัติการเช็คอิน-เช็คเอาท์ สรุปชั่วโมงการทำงาน</p></div>
+        <div class="clock-widget">
+          <div class="cw-time" id="cw-clock">--:--:--</div>
+          <div class="cw-date" id="cw-date-lbl">--</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <button class="btn btn-teal" id="att-ci-btn" onclick="checkIn()">🟢 เช็คอินเข้างาน</button>
+            <button class="btn btn-danger" id="att-co-btn" onclick="checkOut()" style="display:none">🔴 เช็คเอาท์ออกงาน</button>
+            <span id="att-sess" style="font-size:12px;color:var(--text2)"></span>
+          </div>
+          <div class="cw-stats">
+            <div><div class="cw-stat-v" id="att-days">0</div><div class="cw-stat-l">วันเข้างาน</div></div>
+            <div><div class="cw-stat-v" id="att-hrs">0</div><div class="cw-stat-l">ชั่วโมงรวม</div></div>
+            <div><div class="cw-stat-v" id="att-late" style="color:var(--rose)">0</div><div class="cw-stat-l">มาสาย</div></div>
+            <div><div class="cw-stat-v" id="att-abs" style="color:var(--amber)">0</div><div class="cw-stat-l">ขาดงาน</div></div>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">📋 ประวัติเข้างาน</div></div>
+            <div style="max-height:360px;overflow-y:auto;padding:14px" id="att-hist"></div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-head"><div class="card-title">📊 สถิติ</div></div>
+              <div class="card-body">
+                <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px">ชั่วโมงสะสม</span><span style="font-size:12px;font-weight:700;color:var(--teal)" id="att-mon-h">0/168</span></div><div class="pb" style="height:7px"><div class="pf pf-t" id="att-mon-pb" style="width:0%"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px">เปอร์เซ็นต์เข้างาน</span><span style="font-size:12px;font-weight:700;color:var(--emerald)" id="att-pct">100%</span></div><div class="pb" style="height:7px"><div class="pf pf-e" id="att-pct-pb" style="width:100%"></div></div></div>
+                <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+                  <div style="font-size:10px;color:var(--text3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.5px">ชั่วโมงรายวันสัปดาห์นี้</div>
+                  <div class="bar-chart" id="att-bars"></div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head"><div class="card-title">✏️ บันทึกด้วยตัวเอง</div><span style="font-size:10px;color:var(--text3)">กรณีลืมเช็คอิน</span></div>
+              <div class="card-body">
+                <div class="form-row3" style="margin-bottom:12px">
+                  <div class="fg"><label class="fl2">วันที่</label><input class="fi3" id="man-d" type="date"></div>
+                  <div class="fg"><label class="fl2">เวลาเข้า</label><input class="fi3" id="man-in" type="time" value="08:00"></div>
+                  <div class="fg"><label class="fl2">เวลาออก</label><input class="fi3" id="man-out" type="time" value="17:00"></div>
+                </div>
+                <div class="fg"><label class="fl2">หมายเหตุ</label><input class="fi3" id="man-note" type="text" placeholder="เช่น ลืมเช็คอิน / WFH"></div>
+                <button class="btn btn-teal btn-sm" onclick="addManualEntry()">💾 บันทึก</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── STUDENT: EVALUATION ─── -->
+      <div class="panel" id="panel-s-eval">
+        <div class="pg-head"><h2>⭐ ผลการประเมิน</h2><p>ดูคะแนนและ feedback จากอาจารย์ที่ปรึกษา</p></div>
+        <div id="s-eval-wrap">
+          <div style="text-align:center;padding:56px;color:var(--text3)"><div style="font-size:44px;margin-bottom:14px">📋</div><div style="font-size:14px;font-weight:600;margin-bottom:6px">ยังไม่มีผลประเมิน</div><div style="font-size:12px">อาจารย์ยังไม่ได้ประเมิน หรืออยู่ระหว่างดำเนินการ</div></div>
+        </div>
+      </div>
+
+      <!-- ─── STUDENT: PROFILE ─── -->
+      <div class="panel" id="panel-s-profile">
+        <div class="pg-head"><h2>👤 ข้อมูลส่วนตัว</h2><p>กรอกและอัปเดตข้อมูลการฝึกงานของคุณ</p></div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">👤 ข้อมูลนักศึกษา</div></div>
+            <div class="card-body">
+              <div class="fg"><label class="fl2">ชื่อ-นามสกุล</label><input class="fi3" id="p-name" type="text" placeholder="ชื่อ นามสกุล"></div>
+              <div class="form-row2"><div class="fg"><label class="fl2">รหัสนักศึกษา</label><input class="fi3" id="p-sid" type="text" placeholder="รหัสนักศึกษา"></div><div class="fg"><label class="fl2">เบอร์โทร</label><input class="fi3" id="p-tel" type="tel" placeholder="0xx-xxx-xxxx"></div></div>
+              <div class="fg"><label class="fl2">มหาวิทยาลัย</label><input class="fi3" id="p-uni" type="text" placeholder="มหาวิทยาลัย"></div>
+              <div class="form-row2"><div class="fg"><label class="fl2">คณะ</label><input class="fi3" id="p-fac" type="text" placeholder="คณะ"></div><div class="fg"><label class="fl2">สาขา</label><input class="fi3" id="p-major" type="text" placeholder="สาขาวิชา"></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">🏢 ข้อมูลฝึกงาน</div></div>
+            <div class="card-body">
+              <div class="fg"><label class="fl2">บริษัท / องค์กร</label><input class="fi3" id="p-comp" type="text" placeholder="ชื่อบริษัท"></div>
+              <div class="fg"><label class="fl2">แผนก</label><input class="fi3" id="p-dept" type="text" placeholder="แผนก / ฝ่าย"></div>
+              <div class="form-row2"><div class="fg"><label class="fl2">วันเริ่ม</label><input class="fi3" id="p-start" type="date"></div><div class="fg"><label class="fl2">วันสิ้นสุด</label><input class="fi3" id="p-end" type="date"></div></div>
+              <div class="fg"><label class="fl2">พี่เลี้ยง (Supervisor)</label><input class="fi3" id="p-sup" type="text" placeholder="ชื่อพี่เลี้ยง"></div>
+              <button class="btn btn-teal btn-sm" onclick="saveProfile()">💾 บันทึกข้อมูล</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TEACHER: DASHBOARD ═══ -->
+      <div class="panel" id="panel-t-dash">
+        <div class="pg-head"><h2>🏠 Dashboard อาจารย์</h2><p>ภาพรวมนักศึกษาในความดูแลของท่าน</p></div>
+        <div class="stat-grid">
+          <div class="stat-box sb1"><div class="stat-ico">👥</div><div class="stat-lbl">นักศึกษาทั้งหมด</div><div class="stat-val" id="td-total">0</div><div class="stat-sub">ในความดูแล</div></div>
+          <div class="stat-box sb2"><div class="stat-ico">✅</div><div class="stat-lbl">ส่งครบสัปดาห์นี้</div><div class="stat-val" id="td-ok">0</div><div class="stat-sub">คน</div></div>
+          <div class="stat-box sb3"><div class="stat-ico">⏳</div><div class="stat-lbl">รอประเมิน</div><div class="stat-val" id="td-eval" style="color:var(--amber)">0</div><div class="stat-sub">คน</div></div>
+          <div class="stat-box sb4"><div class="stat-ico">⚠️</div><div class="stat-lbl">ไม่ส่งบันทึก</div><div class="stat-val" id="td-miss" style="color:var(--rose)">0</div><div class="stat-sub">คน</div></div>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-head"><div class="card-title">👥 นักศึกษาในดูแล</div><button class="btn btn-sm btn-outline" onclick="switchPanel('t-interns')">ดูทั้งหมด →</button></div>
+            <div style="overflow-x:auto"><table><thead><tr><th>ชื่อ</th><th>ความก้าวหน้า</th><th>สถานะ</th><th></th></tr></thead><tbody id="td-intern-tbl"></tbody></table></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">🕐 กิจกรรมล่าสุด</div></div>
+            <div class="card-body">
+              <div class="act-item"><div class="act-ico ai-t">📝</div><div><div class="act-text"><strong>สมชาย ใจดี</strong> ส่งบันทึกประจำวัน</div><div class="act-time">30 นาทีที่แล้ว</div></div></div>
+              <div class="act-item"><div class="act-ico ai-a">⚠️</div><div><div class="act-text"><strong>กิตติพงษ์ ลมเย็น</strong> ยังไม่ส่งบันทึก 3 วัน</div><div class="act-time">2 ชั่วโมงที่แล้ว</div></div></div>
+              <div class="act-item"><div class="act-ico ai-b">⭐</div><div><div class="act-text">ถึงกำหนดประเมิน <strong>วิภา สว่าง</strong></div><div class="act-time">เมื่อวาน</div></div></div>
+              <div class="act-item"><div class="act-ico ai-r">❌</div><div><div class="act-text"><strong>ธนภัทร มีสุข</strong> ขาดงาน 1 วัน</div><div class="act-time">2 วันที่แล้ว</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <div class="tbl-head"><div class="tbl-title">📬 บันทึกที่รอตรวจ</div><button class="btn btn-sm btn-blue" onclick="switchPanel('t-review')">ตรวจสอบทั้งหมด →</button></div>
+          <table><thead><tr><th>นักศึกษา</th><th>วันที่</th><th>หัวข้อ</th><th>Mood</th><th>สถานะ</th><th></th></tr></thead>
+          <tbody id="td-pending"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ═══ TEACHER: INTERN LIST ═══ -->
+      <div class="panel" id="panel-t-interns">
+        <div class="pg-head"><h2>👥 รายชื่อนักศึกษา</h2><p>จัดการและติดตามนักศึกษาในความดูแล</p></div>
+        <div class="filter-row">
+          <button class="fchip fb fa" onclick="filterInterns(this,'all')">ทั้งหมด</button>
+          <button class="fchip fb" onclick="filterInterns(this,'active')">กำลังฝึกงาน</button>
+          <button class="fchip fb" onclick="filterInterns(this,'pending')">ต้องติดตาม</button>
+          <button class="fchip fb" onclick="filterInterns(this,'done')">เสร็จสิ้น</button>
+        </div>
+        <div class="tbl-wrap">
+          <div class="tbl-head"><div class="tbl-title">รายชื่อทั้งหมด</div><button class="btn btn-sm btn-blue" onclick="openAddInternModal()">+ เพิ่มนักศึกษา</button></div>
+          <table><thead><tr><th>นักศึกษา</th><th>มหาวิทยาลัย</th><th>แผนก</th><th>ความก้าวหน้า</th><th>สถานะ</th><th></th></tr></thead>
+          <tbody id="t-intern-list"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ═══ TEACHER: REVIEW DIARIES ═══ -->
+      <div class="panel" id="panel-t-review">
+        <div class="pg-head"><h2>📝 ตรวจบันทึกประจำวัน</h2><p>ตรวจสอบ อนุมัติ และ comment บันทึกของนักศึกษา</p></div>
+        <div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;align-items:center">
+          <label class="fl2" style="margin:0">เลือกนักศึกษา:</label>
+          <select class="fi3" id="review-intern-sel" onchange="loadReviewDiaries()" style="width:240px">
+            <option value="all">— ทั้งหมด —</option>
+          </select>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button class="btn btn-success btn-sm" onclick="approveAllDiaries()">✅ อนุมัติทั้งหมด</button>
+            <button class="btn btn-amber btn-sm" onclick="notifyAll()">📧 แจ้งเตือนทั้งหมด</button>
+          </div>
+        </div>
+        <div class="grid2">
+          <div id="review-list"></div>
+          <div>
+            <div class="card" id="review-detail-card" style="display:none">
+              <div class="card-head"><div class="card-title">💬 ตรวจสอบบันทึก</div></div>
+              <div class="card-body" id="review-detail-body"></div>
+            </div>
+            <div style="text-align:center;padding:40px;color:var(--text3);font-size:13px" id="review-placeholder">← เลือกบันทึกเพื่อตรวจสอบ</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TEACHER: ATTENDANCE VIEW ═══ -->
+      <div class="panel" id="panel-t-att">
+        <div class="pg-head"><h2>⏰ ติดตามเวลาเข้างาน</h2><p>ดูสถิติการเข้างานของนักศึกษาทุกคน</p></div>
+        <div class="tbl-wrap">
+          <div class="tbl-head"><div class="tbl-title">สถิติการเข้างานรายคน</div></div>
+          <table><thead><tr><th>นักศึกษา</th><th>วันเข้างาน</th><th>ชั่วโมงรวม</th><th>มาสาย</th><th>ขาดงาน</th><th>เปอร์เซ็นต์</th><th>สถานะ</th></tr></thead>
+          <tbody id="t-att-tbl"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ═══ TEACHER: EVALUATE ═══ -->
+      <div class="panel" id="panel-t-eval">
+        <div class="pg-head"><h2>⭐ ประเมินผลนักศึกษา</h2><p>กรอกแบบฟอร์มประเมินผลการฝึกงาน</p></div>
+        <div style="display:flex;gap:12px;margin-bottom:18px;align-items:center;flex-wrap:wrap">
+          <label class="fl2" style="margin:0">เลือกนักศึกษาที่จะประเมิน:</label>
+          <select class="fi3" id="eval-intern-sel" onchange="loadEvalForm()" style="width:240px"></select>
+        </div>
+        <div class="grid2">
+          <div>
+            <div id="eval-intern-info" style="display:none" class="ipb">
+              <div class="ipb-ava c1" id="ei-ava">ส</div>
+              <div><div class="ipb-name" id="ei-name">ชื่อ</div><div class="ipb-meta" id="ei-meta">รายละเอียด</div></div>
+              <div id="ei-prev-score" style="margin-left:auto;text-align:right"></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><div class="card-title">📋 เกณฑ์การประเมิน</div></div>
+              <div class="card-body">
+                <div class="eval-grid" id="eval-criteria-grid"></div>
+                <div class="fg"><label class="fl2">คะแนนรวม (รูดเลือก)</label>
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <input type="range" min="1" max="5" step="0.1" value="4" id="eval-overall" oninput="document.getElementById('eval-overall-val').textContent=parseFloat(this.value).toFixed(1)" style="flex:1;accent-color:var(--teal)">
+                    <span id="eval-overall-val" style="font-family:'Kanit';font-size:22px;font-weight:900;color:var(--teal);min-width:40px">4.0</span>
+                    <span style="font-size:13px;color:var(--text3)">/5.0</span>
+                  </div>
+                </div>
+                <div class="fg"><label class="fl2">ความคิดเห็น / Feedback <span>*</span></label><textarea class="fi3" id="eval-comment" rows="4" placeholder="ระบุจุดเด่น จุดที่ต้องพัฒนา และข้อแนะนำ..."></textarea></div>
+                <div class="fg"><label class="fl2">รอบการประเมิน</label>
+                  <select class="fi3" id="eval-round"><option>ประเมินกลางเทอม (รอบที่ 1)</option><option>ประเมินปลายเทอม (รอบที่ 2)</option><option>ประเมินสรุปสิ้นสุด</option></select>
+                </div>
+                <div style="display:flex;gap:9px;flex-wrap:wrap">
+                  <button class="btn btn-outline btn-sm" onclick="saveDraftEval()">💾 บันทึกร่าง</button>
+                  <button class="btn btn-blue" onclick="submitEval()">📤 ส่งผลประเมิน</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-head"><div class="card-title">📊 ประวัติการประเมิน</div></div>
+              <div style="max-height:480px;overflow-y:auto;padding:16px" id="eval-history"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TEACHER: REPORTS ═══ -->
+      <div class="panel" id="panel-t-reports">
+        <div class="pg-head"><h2>📄 รายงานสรุป</h2><p>สรุปผลการฝึกงานรายบุคคลและภาพรวม</p></div>
+        <div class="tbl-wrap">
+          <div class="tbl-head"><div class="tbl-title">ผลการประเมินทั้งหมด</div><button class="btn btn-sm btn-outline" onclick="exportCSV()">⬇ Export CSV</button></div>
+          <table><thead><tr><th>นักศึกษา</th><th>ทักษะ</th><th>ความรับผิดชอบ</th><th>ทีมเวิร์ค</th><th>สื่อสาร</th><th>คะแนนรวม</th><th>เกรด</th><th>ผู้ประเมิน</th></tr></thead>
+          <tbody id="t-report-tbl"></tbody></table>
+        </div>
+        <div class="grid3">
+          <div class="card"><div class="card-head"><div class="card-title">📊 IT / Dev</div></div><div class="card-body" style="text-align:center"><div style="font-family:'Kanit';font-size:36px;font-weight:900;color:var(--emerald)">4.5</div><div style="font-size:11px;color:var(--text2)">4 คน · ดีเยี่ยม</div></div></div>
+          <div class="card"><div class="card-head"><div class="card-title">📣 Marketing</div></div><div class="card-body" style="text-align:center"><div style="font-family:'Kanit';font-size:36px;font-weight:900;color:var(--blue)">4.1</div><div style="font-size:11px;color:var(--text2)">3 คน · ดี</div></div></div>
+          <div class="card"><div class="card-head"><div class="card-title">💰 Finance</div></div><div class="card-body" style="text-align:center"><div style="font-family:'Kanit';font-size:36px;font-weight:900;color:var(--amber)">3.8</div><div style="font-size:11px;color:var(--text2)">3 คน · ปานกลาง</div></div></div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </div><!-- /app-main -->
+</div><!-- /screen-app -->
+
+
+        <script src="script.js"></script>
+    </body>
+</html>

@@ -1,0 +1,3200 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internship — ระบบฝึกงาน</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800;900&family=Kanit:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#07090f;--bg2:#0d1117;--surface:#111827;--surface2:#162032;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--teal:#00c9a7;--teal2:#00a389;--blue:#3b82f6;--indigo:#6366f1;--amber:#f59e0b;--rose:#f43f5e;--emerald:#10b981;--text:#e8edf5;--text2:#94a3b8;--text3:#4b5e7a}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans Thai','Kanit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.screen{display:none;min-height:100vh;animation:fadeIn .35s ease}
+.screen.active{display:flex;flex-direction:column}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ════════ LANDING SECTION (หน้าแรก) ════════ */
+
+/* 1. พื้นหลังและโครงสร้างหลัก */
+#screen-landing {
+    /* พื้นหลังไล่สีเข้มขึ้น และมีแสงสีส้มจางๆ ด้านบน */
+    background: 
+        radial-gradient(circle at 50% 0%, rgba(255, 110, 30, 0.15), transparent 50%),
+        radial-gradient(circle at 85% 60%, rgba(249, 115, 22, 0.08), transparent 40%),
+        var(--bg);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 80px 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ตาราง Grid จางๆ ที่พื้นหลัง */
+.land-grid {
+    position: absolute;
+    inset: 0;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    mask-image: radial-gradient(circle at center, black 40%, transparent 80%); /* ให้ grid จางหายไปที่ขอบ */
+    pointer-events: none;
+}
+
+/* แสง Glow ตรงกลาง */
+.land-glow {
+    position: absolute;
+    width: 800px;
+    height: 800px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 100, 0, 0.06), transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.land-content {
+    position: relative;
+    z-index: 2;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* 2. ป้าย Badge ด้านบนสุด */
+.land-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    /* เปลี่ยนเป็นพื้นหลังใส เบลอ และขอบสีส้ม */
+    background: rgba(255, 120, 20, 0.1);
+    border: 1px solid rgba(255, 120, 20, 0.3);
+    backdrop-filter: blur(5px);
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-size: 13px;
+    color: #ff8c42; /* สีส้มสว่าง */
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 32px;
+    box-shadow: 0 0 15px rgba(255, 100, 0, 0.1);
+    animation: fadeIn .5s ease .1s both;
+}
+
+/* 3. หัวข้อหลัก (H1) */
+.land-h1 {
+    font-family: 'Kanit', sans-serif;
+    font-size: clamp(42px, 7vw, 90px);
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    color: #fff;
+    text-shadow: 0 0 30px rgba(0,0,0,0.5);
+    animation: fadeIn .5s ease .15s both;
+}
+
+/* ตัวหนังสือไล่สี (Gradient Text) */
+.land-h1 .g {
+    background: linear-gradient(135deg, #ff9a44, #fc6076);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    display: inline-block;
+}
+
+/* คำอธิบายรอง */
+.land-sub {
+    font-size: 18px;
+    color: var(--text2);
+    max-width: 600px;
+    margin: 0 auto 50px;
+    line-height: 1.7;
+    font-weight: 300;
+    animation: fadeIn .5s ease .2s both;
+}
+
+/* 4. ปุ่ม Action (เข้าสู่ระบบ/ดูฟีเจอร์) */
+/* 1. ส่วนจัดตำแหน่ง (อันเดิมที่คุณส่งมา ไม่ต้องแก้) */
+.land-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 70px;
+    animation: fadeIn .5s ease .25s both;
+}
+
+/* 2. 🔥 เพิ่มส่วนนี้เพื่อแก้สีปุ่มเป็น "สีส้ม" ครับ */
+.btn-teal {
+    /* เปลี่ยนพื้นหลังเป็นไล่สีส้ม */
+    background: linear-gradient(135deg, #ff8c42 0%, #f95316 100%) !important;
+    color: #ffffff !important;
+    
+    /* เปลี่ยนเงาเป็นสีส้มเรืองแสง */
+    box-shadow: 0 4px 15px rgba(249, 83, 22, 0.4) !important;
+    border: none;
+    
+    /* โครงสร้างปุ่ม */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    text-decoration: none;
+    transition: all .25s ease;
+}
+
+/* เอฟเฟกต์ตอนเอาเมาส์ชี้ปุ่ม */
+.btn-teal:hover {
+    background: linear-gradient(135deg, #ffa66b 0%, #fb713c 100%) !important;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(249, 83, 22, 0.6) !important;
+}
+
+/* 5. การ์ดเลือกบทบาท (นักศึกษา/อาจารย์) */
+.role-cards {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeIn .5s ease .3s both;
+    margin-bottom: 20px;
+}
+
+.role-label {
+    font-size: 12px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+    font-weight: 700;
+    opacity: 0.7;
+    animation: fadeIn .5s ease .28s both;
+}
+
+/* ตัวการ์ดบทบาท - ปรับเป็นกระจกฝ้า (Glassmorphism) */
+.role-card {
+    background: rgba(255, 255, 255, 0.03); /* พื้นหลังจาง */
+    border: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 30px;
+    width: 200px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    text-decoration: none;
+    color: var(--text);
+    position: relative;
+    overflow: hidden;
+}
+
+/* เอฟเฟกต์ตอนชี้เมาส์ (Hover) */
+.role-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    background: rgba(255, 100, 0, 0.1); /* สีส้มจางๆ */
+    border-color: rgba(255, 100, 0, 0.5);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 100, 0, 0.2);
+}
+
+.rc-icon {
+    font-size: 42px;
+    margin-bottom: 16px;
+    display: block;
+    filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));
+    transition: transform 0.3s;
+}
+.role-card:hover .rc-icon { transform: scale(1.1) rotate(5deg); }
+
+.rc-title {
+    font-family: 'Kanit', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 6px;
+}
+.rc-desc {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+}
+
+/* 6. ส่วนฟีเจอร์ (Features) */
+.feat-section {
+    max-width: 960px;
+    margin: 100px auto 0;
+    text-align: left;
+    animation: fadeIn .5s ease .35s both;
+}
+.feat-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #ff8c42;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 12px;
+}
+.feat-headline {
+    font-family: 'Kanit', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 48px;
+    background: linear-gradient(to right, #fff, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.feat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+/* การ์ดฟีเจอร์ */
+.feat-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s;
+}
+.feat-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 120, 20, 0.3);
+    transform: translateY(-5px);
+}
+
+.fi {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 18px;
+    /* ปรับสีไอคอนให้ดูหรูขึ้น */
+    background: linear-gradient(135deg, rgba(255, 100, 0, 0.2), rgba(255, 100, 0, 0.05));
+    border: 1px solid rgba(255, 100, 0, 0.2);
+    color: #fff;
+}
+
+/* แก้ไขสีพื้นหลังเดิมที่ไม่สวย */
+.fi-t, .fi-b, .fi-a, .fi-e, .fi-i, .fi-r { background: inherit; } 
+
+.feat-name {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+}
+.feat-desc {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+}
+
+/* LOGIN */
+#screen-login{background:radial-gradient(ellipse 70% 60% at 30% 40%,rgba(201, 87, 0, 0.811),transparent 60%),var(--bg);align-items:center;justify-content:center;padding:24px}
+.login-wrap{width:100%;max-width:920px;display:grid;grid-template-columns:1fr 1.15fr;border-radius:22px;overflow:hidden;border:1px solid var(--border2)}
+.login-left{background:linear-gradient(160deg,var(--surface) 0%,var(--surface2) 100%);padding:52px 44px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.login-left::before{content:'';position:absolute;top:-80px;right:-80px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(0,201,167,.08),transparent 70%)}
+.ll-logo{font-family:'Kanit',sans-serif;font-size:22px;font-weight:900;background:linear-gradient(135deg,var(--teal),#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:40px;position:relative;z-index:1}
+.ll-tagline{position:relative;z-index:1}
+.ll-tagline h2{font-family:'Kanit',sans-serif;font-size:26px;font-weight:800;line-height:1.3;margin-bottom:12px}
+.ll-tagline p{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:28px}
+.ll-hints{display:flex;flex-direction:column;gap:9px;position:relative;z-index:1}
+.ll-hint{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;background:rgba(255, 255, 255, 0.04);border:1px solid var(--border);font-size:12px;color:var(--text2)}
+.ll-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.login-right{background:var(--bg2);padding:52px 44px;display:flex;flex-direction:column;justify-content:center}
+.login-tabs{display:flex;gap:4px;background:var(--surface);border-radius:10px;padding:4px;margin-bottom:26px}
+.ltab{flex:1;text-align:center;padding:9px;font-size:13px;font-weight:700;border-radius:7px;cursor:pointer;transition:all .2s;color:var(--text2);border:none;background:none;font-family:inherit}
+.ltab.active{background:var(--surface2);color:var(--text);box-shadow:0 2px 8px rgba(0, 0, 0, 0.3)}
+.l-title{font-family:'Kanit',sans-serif;font-size:24px;font-weight:800;margin-bottom:5px}
+.l-sub{font-size:13px;color:var(--text2);margin-bottom:24px}
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.fl span{color:var(--rose)}
+.fi2{width:100%;background:rgba(255, 209, 178, 0.859);border:1px solid var(--border);border-radius:9px;padding:11px 15px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:all .2s}
+.fi2:focus{border-color:var(--teal);background:rgba(201, 80, 0, 0.04)}
+.fi2::placeholder{color:var(--text3)}
+select.fi2{cursor:pointer}select.fi2 option{background:var(--surface)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pw-wrap{position:relative}.pw-eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text3);font-size:15px;user-select:none}
+.pw-eye:hover{color:var(--text2)}
+.hint-box{background:rgba(201, 94, 0, 0.07);border:1px solid rgba(201, 94, 0, 0.2);border-radius:8px;padding:9px 13px;font-size:11px;color:rgba(201, 87, 0, 0.9);margin-bottom:14px;line-height:1.6}
+.err-box{background:rgba(244, 126, 63, 0.08);border:1px solid rgba(244, 132, 63, 0.2);border-radius:8px;padding:9px 13px;font-size:11px;color:#fcc6a5;margin-bottom:14px;display:none}
+.l-submit{width:100%;padding:13px;font-size:14px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;border:none;background:linear-gradient(135deg,var(--teal),var(--blue));color:#fff;box-shadow:0 8px 24px rgba(201, 84, 0, 0.22);transition:all .22s;margin-top:4px}
+.l-submit:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(201, 87, 0, 0.35)}
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--text3);font-size:12px;cursor:pointer;margin-bottom:24px;transition:color .2s;border:none;background:none;font-family:inherit}
+.back-link:hover{color:var(--text2)}
+
+/* APP LAYOUT */
+.app-screen{flex-direction:row!important}
+.sidebar{width:245px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;z-index:100;transition:transform .3s}
+.sb-logo{padding:22px 18px 16px;border-bottom:1px solid var(--border)}
+.sb-logo-text{font-family:'Kanit',sans-serif;font-size:19px;font-weight:900;background:linear-gradient(135deg,var(--teal),#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sb-logo-sub{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-top:2px}
+.sb-role-badge{margin:10px 14px;padding:7px 11px;border-radius:7px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:7px}
+.rb-s{background:rgba(0,201,167,.1);color:var(--teal);border:1px solid rgba(0,201,167,.2)}
+.rb-t{background:rgba(59,130,246,.1);color:var(--blue);border:1px solid rgba(59,130,246,.2)}
+.sb-nav{flex:1;padding:6px 9px;overflow-y:auto}
+.sb-sec{margin-bottom:18px}
+.sb-sec-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;padding:0 9px;margin-bottom:5px;font-weight:700}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 9px;border-radius:7px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:600;transition:all .2s;position:relative;border:none;background:none;font-family:inherit;width:100%;text-align:left}
+.sb-item:hover{background:var(--surface2);color:var(--text)}
+.sb-item.active{background:rgba(0,201,167,.1);color:var(--teal)}
+.sb-item.active::before{content:'';position:absolute;left:0;top:18%;height:64%;width:3px;background:var(--teal);border-radius:0 3px 3px 0}
+.sb-item.t-active{background:rgba(59,130,246,.1);color:var(--blue)}
+.sb-item.t-active::before{background:var(--blue)}
+.sb-icon{font-size:15px;width:17px;text-align:center;flex-shrink:0}
+.sb-bdg{margin-left:auto;background:var(--rose);color:#fff;font-size:9px;font-weight:800;padding:2px 5px;border-radius:8px;min-width:16px;text-align:center}
+.sb-bdg.w{background:var(--amber);color:#000}
+.sb-footer{padding:12px;border-top:1px solid var(--border)}
+.sb-user{display:flex;align-items:center;gap:9px;padding:9px;border-radius:9px;background:var(--surface2)}
+.sb-ava{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--bg);flex-shrink:0}
+.ava-t{background:linear-gradient(135deg,var(--teal),#38bdf8)}.ava-b{background:linear-gradient(135deg,var(--blue),var(--indigo))}
+.sb-uname{font-size:12px;font-weight:700}
+.sb-urole{font-size:10px;color:var(--text3)}
+.sb-logout{margin-left:auto;font-size:13px;color:var(--text3);cursor:pointer;transition:color .2s;background:none;border:none;padding:4px;border-radius:5px}
+.sb-logout:hover{color:var(--rose);background:rgba(244,63,94,.1)}
+
+.app-main{margin-left:245px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 26px;gap:12px;position:sticky;top:0;z-index:50}
+.tb-title{font-family:'Kanit',sans-serif;font-size:17px;font-weight:800;flex:1}
+.tb-search{display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 13px;width:190px}
+.tb-search input{background:none;border:none;outline:none;color:var(--text);font-size:12px;font-family:inherit;width:100%}
+.tb-search input::placeholder{color:var(--text3)}
+.notif-btn{width:32px;height:32px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;position:relative;flex-shrink:0}
+.notif-dot{position:absolute;top:5px;right:5px;width:6px;height:6px;background:var(--rose);border-radius:50%;border:2px solid var(--surface)}
+.content-area{flex:1;padding:26px;overflow-y:auto}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit;text-decoration:none;transition:all .22s;white-space:nowrap}
+.btn-teal{background:var(--teal);color:#07090f;box-shadow:0 6px 20px rgba(0,201,167,.28)}.btn-teal:hover{background:var(--teal2);transform:translateY(-2px)}
+.btn-blue{background:var(--blue);color:#fff;box-shadow:0 5px 16px rgba(59,130,246,.28)}.btn-blue:hover{background:#2563eb;transform:translateY(-2px)}
+.btn-ghost{background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--border2)}.btn-ghost:hover{background:rgba(255,255,255,.09)}
+.btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border2)}.btn-outline:hover{background:var(--surface2);color:var(--text)}
+.btn-danger{background:rgba(244,63,94,.1);color:var(--rose);border:1px solid rgba(244,63,94,.2)}.btn-danger:hover{background:rgba(244,63,94,.2)}
+.btn-success{background:rgba(16,185,129,.1);color:var(--emerald);border:1px solid rgba(16,185,129,.2)}.btn-success:hover{background:rgba(16,185,129,.2)}
+.btn-amber{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2)}.btn-amber:hover{background:rgba(245,158,11,.2)}
+.btn-sm{padding:7px 14px;font-size:12px;border-radius:7px}
+
+/* PANELS */
+.panel{display:none;animation:fadeIn .3s ease}.panel.active{display:block}
+.pg-head{margin-bottom:22px}.pg-head h2{font-family:'Kanit',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px}.pg-head p{font-size:13px;color:var(--text2)}
+
+/* STATS */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;transition:border-color .2s}
+.stat-box:hover{border-color:var(--border2)}
+.stat-box::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.sb1::after{background:var(--teal)}.sb2::after{background:var(--blue)}.sb3::after{background:var(--amber)}.sb4::after{background:var(--emerald)}
+.stat-lbl{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:5px}
+.stat-val{font-family:'Kanit',sans-serif;font-size:26px;font-weight:900;letter-spacing:-1px}
+.stat-sub{font-size:10px;color:var(--text3);margin-top:3px}
+.stat-ico{position:absolute;right:14px;top:14px;font-size:22px;opacity:.12}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:13px;overflow:hidden;margin-bottom:18px}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-family:'Kanit',sans-serif;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
+.card-body{padding:18px}
+
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* TABLES */
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:13px;overflow:hidden;margin-bottom:18px}
+.tbl-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.tbl-title{font-family:'Kanit',sans-serif;font-weight:700;font-size:14px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 16px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);font-weight:700;border-bottom:1px solid var(--border);background:rgba(255,255,255,.015)}
+td{padding:12px 16px;font-size:12px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+tr:last-child td{border-bottom:none}tr:hover td{background:rgba(255,255,255,.018)}
+
+/* AVATAR */
+.ava-sm{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+.c1{background:linear-gradient(135deg,#667eea,#764ba2)}.c2{background:linear-gradient(135deg,#f093fb,#f5576c)}.c3{background:linear-gradient(135deg,#4facfe,#00f2fe)}.c4{background:linear-gradient(135deg,#43e97b,#38f9d7)}.c5{background:linear-gradient(135deg,#fa709a,#fee140)}.c6{background:linear-gradient(135deg,#30cfd0,#667eea)}
+.nm{display:flex;align-items:center;gap:9px}
+.nm-main{font-weight:700;font-size:12px}.nm-sub{font-size:10px;color:var(--text2);margin-top:1px}
+
+/* STATUS */
+.status{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:14px;font-size:10px;font-weight:800}
+.status::before{content:'';width:5px;height:5px;border-radius:50%}
+.s-ok{background:rgba(16,185,129,.1);color:var(--emerald)}.s-ok::before{background:var(--emerald);box-shadow:0 0 5px var(--emerald);animation:blink 2s infinite}
+.s-warn{background:rgba(245,158,11,.1);color:var(--amber)}.s-warn::before{background:var(--amber)}
+.s-bad{background:rgba(244,63,94,.1);color:var(--rose)}.s-bad::before{background:var(--rose)}
+.s-done{background:rgba(148,163,184,.08);color:var(--text2)}.s-done::before{background:var(--text2)}
+.s-rev{background:rgba(99,102,241,.1);color:var(--indigo)}.s-rev::before{background:var(--indigo)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* PROGRESS */
+.pw{display:flex;align-items:center;gap:7px}
+.pb{flex:1;height:5px;background:rgba(255,255,255,.05);border-radius:5px;overflow:hidden}
+.pf{height:100%;border-radius:5px;transition:width .8s ease}
+.pf-t{background:linear-gradient(90deg,var(--teal),#38bdf8)}.pf-a{background:linear-gradient(90deg,var(--amber),#f97316)}.pf-r{background:linear-gradient(90deg,var(--rose),#f97316)}.pf-e{background:linear-gradient(90deg,var(--emerald),var(--teal))}
+.pt{font-size:10px;font-weight:700;color:var(--text2);min-width:28px;text-align:right}
+
+/* FORM */
+.fg{margin-bottom:14px}
+.fl2{display:block;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.fl2 span{color:var(--rose)}
+.fi3{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:all .2s}
+.fi3:focus{border-color:var(--teal);background:rgba(0,201,167,.04)}
+.fi3::placeholder{color:var(--text3)}
+textarea.fi3{resize:vertical;min-height:75px;line-height:1.7}
+select.fi3{cursor:pointer}select.fi3 option{background:var(--surface)}
+.form-row2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.form-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+
+/* CLOCK WIDGET */
+.clock-widget{background:linear-gradient(135deg,var(--surface2),var(--surface));border:1px solid var(--border2);border-radius:16px;padding:26px;margin-bottom:18px;position:relative;overflow:hidden}
+.clock-widget::before{content:'';position:absolute;top:-30px;right:-30px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(0,201,167,.06),transparent 70%)}
+.cw-time{font-family:'Kanit',sans-serif;font-size:48px;font-weight:900;letter-spacing:-2px;color:var(--teal);line-height:1;margin-bottom:3px}
+.cw-date{font-size:12px;color:var(--text2);margin-bottom:20px}
+.cw-stats{display:flex;gap:24px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.cw-stat-v{font-family:'Kanit',sans-serif;font-size:18px;font-weight:800;color:var(--teal)}
+.cw-stat-l{font-size:10px;color:var(--text3);margin-top:1px}
+
+/* MOOD */
+.mood-sel{display:flex;gap:7px;flex-wrap:wrap}
+.mood-opt{width:46px;height:46px;border-radius:10px;border:2px solid var(--border);background:none;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.mood-opt:hover{transform:scale(1.1)}
+.mood-opt.sel{border-color:var(--teal);background:rgba(0,201,167,.1)}
+
+/* SKILL CHIPS */
+.skill-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.skill-chip{display:inline-flex;align-items:center;gap:4px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.22);border-radius:12px;padding:3px 9px;font-size:11px;color:var(--indigo);font-weight:700}
+.skill-chip .rm{cursor:pointer;opacity:.7;font-size:12px}.skill-chip .rm:hover{opacity:1}
+
+/* DIARY */
+.diary-card{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:14px;margin-bottom:9px;cursor:pointer;transition:all .2s;border-left:3px solid var(--border)}
+.diary-card:hover{border-color:var(--border2);background:rgba(255,255,255,.035)}
+.dc-ok{border-left-color:var(--emerald)}.dc-pend{border-left-color:var(--amber)}.dc-cmt{border-left-color:var(--blue)}
+.dc-top{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.dc-date{font-size:11px;font-weight:700;color:var(--teal)}
+.dc-chip{margin-left:auto;padding:2px 7px;border-radius:9px;font-size:9px;font-weight:800}
+.dcc-ok{background:rgba(16,185,129,.1);color:var(--emerald)}.dcc-p{background:rgba(245,158,11,.1);color:var(--amber)}.dcc-c{background:rgba(59,130,246,.1);color:var(--blue)}
+.dc-title{font-size:12px;font-weight:700;margin-bottom:4px}
+.dc-preview{font-size:11px;color:var(--text2);line-height:1.6;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.dc-cmt-box{margin-top:9px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:7px;padding:8px;font-size:11px;line-height:1.6}
+.dc-cmt-from{font-size:9px;font-weight:800;color:var(--blue);margin-bottom:3px}
+
+/* ATTENDANCE */
+.time-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03);gap:8px}
+.time-row:last-child{border-bottom:none}
+.t-date{font-size:11px;font-weight:700;color:var(--teal);width:90px;flex-shrink:0}
+.t-in{font-size:12px;color:var(--emerald);font-weight:700;width:70px}
+.t-out{font-size:12px;color:var(--rose);font-weight:700;width:70px}
+.t-hrs{font-size:11px;font-weight:700;color:var(--text2);width:70px}
+.t-note{font-size:10px;color:var(--text3);flex:1}
+
+/* WEEK GRID */
+.att-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.att-day{aspect-ratio:1;border-radius:7px;border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;font-weight:700;cursor:default}
+.ad-ok{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3);color:var(--emerald)}
+.ad-today{border-color:var(--teal);color:var(--teal);box-shadow:0 0 0 2px rgba(0,201,167,.13)}
+.ad-late{background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.25);color:var(--rose)}
+.ad-off{background:rgba(255,255,255,.01);color:var(--text3)}
+
+/* STAR RATING */
+.star-grp{display:flex;gap:3px;align-items:center}
+.star-btn{font-size:22px;cursor:pointer;transition:transform .1s;background:none;border:none;padding:1px;color:var(--text3)}
+.star-btn.on{color:var(--amber)}.star-btn:hover{transform:scale(1.15)}
+
+.eval-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.eval-item{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:13px}
+.eval-lbl{font-size:11px;color:var(--text2);font-weight:700;margin-bottom:7px;display:flex;align-items:center;gap:5px}
+
+/* SCORE BIG */
+.score-hero{text-align:center;padding:22px;background:linear-gradient(135deg,rgba(0,201,167,.08),rgba(59,130,246,.05));border-radius:13px;margin-bottom:16px;border:1px solid rgba(0,201,167,.12)}
+.score-big-num{font-family:'Kanit',sans-serif;font-size:60px;font-weight:900;letter-spacing:-3px;background:linear-gradient(135deg,var(--teal),#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.score-grade{font-family:'Kanit',sans-serif;font-size:17px;font-weight:800;color:var(--amber);margin-top:4px}
+
+/* ACTIVITY */
+.act-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.act-item:last-child{border-bottom:none}
+.act-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.ai-t{background:rgba(0,201,167,.12)}.ai-b{background:rgba(59,130,246,.12)}.ai-a{background:rgba(245,158,11,.12)}.ai-r{background:rgba(244,63,94,.12)}
+.act-text{font-size:11px;line-height:1.6;color:var(--text2)}.act-text strong{color:var(--teal)}
+.act-time{font-size:10px;color:var(--text3);margin-top:1px}
+
+/* FILTER */
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.fchip{padding:5px 12px;border-radius:14px;border:1px solid var(--border);background:none;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s}
+.fchip:hover{border-color:var(--border2);color:var(--text)}
+.fchip.fa{background:rgba(0,201,167,.1);border-color:rgba(0,201,167,.3);color:var(--teal)}
+.fchip.fb.fa{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3);color:var(--blue)}
+
+/* BAR CHART */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:90px}
+.bc{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;height:100%;justify-content:flex-end}
+.bbar{width:100%;border-radius:5px 5px 0 0;min-height:3px;transition:height .8s ease;background:linear-gradient(180deg,var(--teal),rgba(0,201,167,.2))}
+.bbar.bb{background:linear-gradient(180deg,var(--blue),rgba(59,130,246,.2))}
+.blbl{font-size:8px;color:var(--text3)}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(5px);z-index:300;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;animation:slideUp .28s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+.modal-head{padding:20px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.modal-title{font-family:'Kanit',sans-serif;font-weight:800;font-size:17px;flex:1}
+.modal-close{width:28px;height:28px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:22px}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:9px;justify-content:flex-end}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--surface);border:1px solid var(--teal);border-radius:10px;padding:12px 16px;font-size:12px;font-weight:700;color:var(--teal);display:flex;align-items:center;gap:9px;z-index:999;transform:translateX(130%);transition:transform .3s ease;max-width:300px;box-shadow:0 8px 28px rgba(0,0,0,.4)}
+.toast.show{transform:translateX(0)}.toast.err{border-color:var(--rose);color:var(--rose)}
+
+/* INTERN PROFILE BAR */
+.ipb{background:linear-gradient(135deg,rgba(59,130,246,.1),rgba(99,102,241,.06));border:1px solid rgba(59,130,246,.2);border-radius:13px;padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.ipb-ava{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0}
+.ipb-name{font-family:'Kanit',sans-serif;font-size:17px;font-weight:800}
+.ipb-meta{font-size:11px;color:var(--text2);margin-top:3px}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:11px;font-size:10px;font-weight:800}
+.tag-b{background:rgba(59,130,246,.1);color:var(--blue);border:1px solid rgba(59,130,246,.18)}
+.tag-t{background:rgba(0,201,167,.08);color:var(--teal);border:1px solid rgba(0,201,167,.18)}
+
+/* DIARY DATE */
+.diary-hdr{display:flex;align-items:center;gap:12px;margin-bottom:18px;background:rgba(0,201,167,.05);border:1px solid rgba(0,201,167,.14);border-radius:11px;padding:14px 16px}
+.diary-date-inp{background:none;border:none;outline:none;color:var(--teal);font-family:'Kanit',sans-serif;font-size:15px;font-weight:700;cursor:pointer}
+.diary-date-inp::-webkit-calendar-picker-indicator{filter:invert(1) opacity(.4);cursor:pointer}
+
+/* ════════ THREE LOGIN PANELS ════════ */
+.three-login-wrap {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 40px auto 0;
+  max-width: 960px;
+  animation: fadeIn .5s ease .4s both;
+}
+.mini-login-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 24px;
+  width: 280px;
+  text-align: left;
+  transition: all 0.3s ease;
+}
+.ml-student { border-color: rgba(0,201,167,.2); }
+.ml-teacher { border-color: rgba(59,130,246,.2); }
+.ml-hr { border-color: rgba(99,102,241,.2); }
+.ml-student:hover { background: rgba(0,201,167,.05); border-color: rgba(0,201,167,.4); transform: translateY(-4px); }
+.ml-teacher:hover { background: rgba(59,130,246,.05); border-color: rgba(59,130,246,.4); transform: translateY(-4px); }
+.ml-hr:hover { background: rgba(99,102,241,.05); border-color: rgba(99,102,241,.4); transform: translateY(-4px); }
+.ml-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.ml-icon { font-size: 28px; }
+.ml-role { font-family: 'Kanit', sans-serif; font-size: 16px; font-weight: 800; color: #fff; }
+.ml-sub { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; }
+.ml-hint { background: rgba(255,255,255,.04); border-radius: 8px; padding: 7px 10px; font-size: 11px; color: var(--text2); margin-bottom: 14px; line-height: 1.5; }
+.ml-field { margin-bottom: 10px; }
+.ml-input { width: 100%; background: rgba(255,255,255,.06); border: 1px solid var(--border); border-radius: 8px; padding: 9px 13px; color: var(--text); font-size: 13px; font-family: inherit; outline: none; transition: all .2s; }
+.ml-input:focus { border-color: var(--teal); }
+.ml-input::placeholder { color: var(--text3); }
+.ml-btn { width: 100%; padding: 11px; border-radius: 9px; font-size: 13px; font-weight: 800; border: none; cursor: pointer; font-family: inherit; margin-top: 4px; transition: all .2s; }
+.ml-btn-s { background: linear-gradient(135deg, var(--teal), #38bdf8); color: #07090f; }
+.ml-btn-s:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,201,167,.35); }
+.ml-btn-t { background: linear-gradient(135deg, var(--blue), var(--indigo)); color: #fff; }
+.ml-btn-t:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,.35); }
+.ml-btn-h { background: linear-gradient(135deg, var(--indigo), #8b5cf6); color: #fff; }
+.ml-btn-h:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,.35); }
+
+/* HR SIDEBAR */
+.rb-h { background: rgba(99,102,241,.1); color: var(--indigo); border: 1px solid rgba(99,102,241,.2); }
+.sb-item.h-active { background: rgba(99,102,241,.1); color: var(--indigo); }
+.sb-item.h-active::before { background: var(--indigo); }
+
+/* HR SCREEN specific */
+#screen-hr .sidebar { border-right: 1px solid rgba(99,102,241,.15); }
+
+/* RESPONSIVE THREE LOGIN */
+@media(max-width:960px){ .three-login-wrap { flex-direction: column; align-items: center; } .mini-login-card { width: 100%; max-width: 360px; } }
+
+/* responsive */
+@media(max-width:1024px){.stat-grid{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.eval-grid{grid-template-columns:1fr}.feat-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:768px){.sidebar{transform:translateX(-245px)}.sidebar.open{transform:translateX(0)}.app-main{margin-left:0}.feat-grid{grid-template-columns:1fr}.land-h1{letter-spacing:-1px}.login-wrap{grid-template-columns:1fr}.login-left{display:none}.form-row2,.form-row3,.fr{grid-template-columns:1fr}.att-grid{grid-template-columns:repeat(5,1fr)}.stat-grid{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:1fr}}
+</style>
+  </head>
+  <body>
+
+    <!-- ══════════ SCREEN 1: LANDING ══════════ -->
+    <div id="screen-landing" class="screen active">
+      <div class="land-grid"></div><div class="land-glow"></div>
+      <div class="land-content">
+        <div class="land-badge">✦ ระบบจัดการฝึกงานออนไลน์ รุ่นใหม่</div>
+        <h1 class="land-h1">ระบบฝึกงาน<br><span
+            class="g">InternTrack</span></h1>
+        <p class="land-sub">เชื่อมต่อนักศึกษาและอาจารย์ในระบบเดียว —
+          บันทึกประจำวัน เช็คอิน-เช็คเอาท์ ติดตามความก้าวหน้า และประเมินผล</p>
+        <div class="land-actions">
+          <button class="btn btn-teal" onclick="goLogin()">🚀
+            เข้าสู่ระบบ</button>
+          <button class="btn btn-ghost"
+            onclick="document.getElementById('feat-s').scrollIntoView({behavior:'smooth'})">ดูฟีเจอร์
+            ↓</button>
+        </div>
+        <div class="role-label">เลือกบทบาทเพื่อเข้าสู่ระบบ</div>
+        <div class="role-cards">
+          <div class="role-card s" onclick="goLoginAs('student')">
+            <span class="rc-icon">🎒</span>
+            <div class="rc-title">นักศึกษา</div>
+            <div class="rc-desc">บันทึกประจำวัน<br>เช็คเวลา ดูผลประเมิน</div>
+          </div>
+          <div class="role-card t" onclick="goLoginAs('teacher')">
+            <span class="rc-icon">👨‍🏫</span>
+            <div class="rc-title">อาจารย์</div>
+            <div class="rc-desc">ติดตาม ตรวจบันทึก<br>ประเมินผลนักศึกษา</div>
+          </div>
+          <div class="role-card" onclick="goLoginAs('hr')"
+            style="border-color:rgba(99,102,241,.3)">
+            <span class="rc-icon">🏢</span>
+            <div class="rc-title">สถานประกอบการ</div>
+            <div class="rc-desc">จัดการนักศึกษา<br>ประเมิน ออกรายงาน</div>
+          </div>
+        </div>
+
+        <!-- ══ 3 LOGIN PANELS ══ -->
+        <div class="three-login-wrap" id="three-login-wrap">
+          <!-- STUDENT LOGIN -->
+          <div class="mini-login-card ml-student">
+            <div class="ml-header">
+              <span class="ml-icon">🎒</span>
+              <div>
+                <div class="ml-role">นักศึกษา</div>
+                <div class="ml-sub">Student Login</div>
+              </div>
+            </div>
+            <div class="ml-hint">Demo: <strong>student@test.com</strong> /
+              <strong>1234</strong></div>
+            <div class="ml-field"><input class="ml-input" type="email"
+                id="ql-s-email" placeholder="อีเมล"
+                value="student@test.com"></div>
+            <div class="ml-field"><input class="ml-input" type="password"
+                id="ql-s-pw" placeholder="รหัสผ่าน" value="1234"></div>
+            <button class="ml-btn ml-btn-s"
+              onclick="quickLogin('student')">เข้าสู่ระบบ →</button>
+          </div>
+          <!-- TEACHER LOGIN -->
+          <div class="mini-login-card ml-teacher">
+            <div class="ml-header">
+              <span class="ml-icon">👨‍🏫</span>
+              <div>
+                <div class="ml-role">อาจารย์</div>
+                <div class="ml-sub">Teacher Login</div>
+              </div>
+            </div>
+            <div class="ml-hint">Demo: <strong>teacher@test.com</strong> /
+              <strong>1234</strong></div>
+            <div class="ml-field"><input class="ml-input" type="email"
+                id="ql-t-email" placeholder="อีเมล"
+                value="teacher@test.com"></div>
+            <div class="ml-field"><input class="ml-input" type="password"
+                id="ql-t-pw" placeholder="รหัสผ่าน" value="1234"></div>
+            <button class="ml-btn ml-btn-t"
+              onclick="quickLogin('teacher')">เข้าสู่ระบบ →</button>
+          </div>
+          <!-- HR LOGIN -->
+          <div class="mini-login-card ml-hr">
+            <div class="ml-header">
+              <span class="ml-icon">🏢</span>
+              <div>
+                <div class="ml-role">สถานประกอบการ</div>
+                <div class="ml-sub">Company / HR Login</div>
+              </div>
+            </div>
+            <div class="ml-hint">Demo: <strong>hr@test.com</strong> /
+              <strong>1234</strong></div>
+            <div class="ml-field"><input class="ml-input" type="email"
+                id="ql-h-email" placeholder="อีเมล" value="hr@test.com"></div>
+            <div class="ml-field"><input class="ml-input" type="password"
+                id="ql-h-pw" placeholder="รหัสผ่าน" value="1234"></div>
+            <button class="ml-btn ml-btn-h"
+              onclick="quickLogin('hr')">เข้าสู่ระบบ →</button>
+          </div>
+        </div>
+        <div id="feat-s" class="feat-section">
+          <div class="feat-label">ฟีเจอร์ครบครัน</div>
+          <div class="feat-headline">ทุกอย่างในระบบเดียว</div>
+          <div class="feat-grid">
+            <div class="feat-card"><div class="fi fi-t">📝</div><div
+                class="feat-name">บันทึกประจำวัน</div><div
+                class="feat-desc">นักศึกษาบันทึกงาน ทักษะ และ mood ประจำวัน
+                พร้อมทักษะที่ได้ฝึก</div></div>
+            <div class="feat-card"><div class="fi fi-b">⏰</div><div
+                class="feat-name">เช็คอิน-เช็คเอาท์</div><div
+                class="feat-desc">บันทึกเวลาเข้า-ออกงาน Real-time สรุปชั่วโมงรวม
+                เปอร์เซ็นต์เข้างาน</div></div>
+            <div class="feat-card"><div class="fi fi-a">⭐</div><div
+                class="feat-name">ประเมินผลด้วยดาว</div><div
+                class="feat-desc">อาจารย์ประเมินด้วย 6 เกณฑ์มาตรฐาน พร้อม
+                feedback ละเอียด</div></div>
+            <div class="feat-card"><div class="fi fi-e">📊</div><div
+                class="feat-name">ติดตามความก้าวหน้า</div><div
+                class="feat-desc">Dashboard ภาพรวม กราฟ และ Timeline
+                การฝึกงานทุกคน</div></div>
+            <div class="feat-card"><div class="fi fi-i">💬</div><div
+                class="feat-name">อาจารย์ Comment</div><div
+                class="feat-desc">อาจารย์อนุมัติบันทึก ให้ comment และ feedback
+                รายวัน</div></div>
+            <div class="feat-card"><div class="fi fi-r">📄</div><div
+                class="feat-name">รายงานอัตโนมัติ</div><div
+                class="feat-desc">สรุปผลรายบุคคล รายแผนก Export
+                ได้ทุกรูปแบบ</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ SCREEN 2: LOGIN ══════════ -->
+    <div id="screen-login" class="screen">
+      <div class="login-wrap">
+        <div class="login-left">
+          <div class="ll-logo">⚡ InternTrack</div>
+          <div class="ll-tagline">
+            <h2>จัดการฝึกงาน<br>ครบทุกขั้นตอน</h2>
+            <p>แพลตฟอร์มเชื่อมนักศึกษาและอาจารย์ ในระบบที่ใช้งานง่าย ครบครัน</p>
+            <div class="ll-hints">
+              <div class="ll-hint"><div class="ll-dot"
+                  style="background:var(--teal)"></div>🎒 นักศึกษา —
+                บันทึกประจำวัน เช็คเวลาเข้าออก ดูผล</div>
+              <div class="ll-hint"><div class="ll-dot"
+                  style="background:var(--blue)"></div>👨‍🏫 อาจารย์ — ดูแล
+                ติดตาม ตรวจและประเมินผล</div>
+            </div>
+          </div>
+        </div>
+        <div class="login-right">
+          <button class="back-link" onclick="goScreen('landing')">←
+            กลับหน้าหลัก</button>
+          <div class="login-tabs">
+            <button class="ltab active" id="lt-login"
+              onclick="switchLoginTab('login')">เข้าสู่ระบบ</button>
+            <button class="ltab" id="lt-reg"
+              onclick="switchLoginTab('register')">สมัครสมาชิก</button>
+          </div>
+          <!-- LOGIN -->
+          <div id="form-login">
+            <div class="l-title">ยินดีต้อนรับกลับ 👋</div>
+            <div class="l-sub">เข้าสู่ระบบเพื่อดำเนินการต่อ</div>
+            <div class="hint-box">💡 Demo: อีเมล <strong><a
+                  href="/cdn-cgi/l/email-protection" class="__cf_email__"
+                  data-cfemail="493a3d3c2d2c273d093d2c3a3d672a2624">[email&#160;protected]</a></strong>
+              / <strong><a href="/cdn-cgi/l/email-protection"
+                  class="__cf_email__"
+                  data-cfemail="82f6e7e3e1eae7f0c2f6e7f1f6ace1edef">[email&#160;protected]</a></strong>
+              · รหัสผ่าน <strong>1234</strong></div>
+            <div id="login-err" class="err-box">อีเมลหรือรหัสผ่านไม่ถูกต้อง
+              กรุณาลองใหม่</div>
+            <div class="fg"><label class="fl">อีเมล <span>*</span></label><input
+                class="fi2" id="l-email" type="email"
+                placeholder="your@email.com"></div>
+            <div class="fg">
+              <label class="fl">รหัสผ่าน <span>*</span></label>
+              <div class="pw-wrap"><input class="fi2" id="l-pw" type="password"
+                  placeholder="••••••••"><span class="pw-eye"
+                  onclick="togglePw('l-pw',this)">👁</span></div>
+            </div>
+            <div class="fg"><label class="fl">บทบาท</label>
+              <select class="fi2" id="l-role">
+                <option value="student">🎒 นักศึกษา</option>
+                <option value="teacher">👨‍🏫 อาจารย์</option>
+                <option value="hr">🏢 สถานประกอบการ / HR</option>
+              </select>
+            </div>
+            <button class="l-submit" onclick="doLogin()">เข้าสู่ระบบ →</button>
+          </div>
+          <!-- REGISTER -->
+          <div id="form-register" style="display:none">
+            <div class="l-title">สมัครสมาชิกใหม่ ✨</div>
+            <div class="l-sub">สร้างบัญชีเพื่อเริ่มต้นใช้งาน</div>
+            <div class="fg"><label class="fl">บทบาท</label><select class="fi2"
+                id="r-role" onchange="updateRegFields()"><option
+                  value="student">🎒 นักศึกษา</option><option
+                  value="teacher">👨‍🏫 อาจารย์</option><option value="hr">🏢
+                  สถานประกอบการ</option></select></div>
+            <div class="fr">
+              <div class="fg"><label class="fl">ชื่อ
+                  <span>*</span></label><input class="fi2" id="r-fn" type="text"
+                  placeholder="ชื่อ"></div>
+              <div class="fg"><label class="fl">นามสกุล
+                  <span>*</span></label><input class="fi2" id="r-ln" type="text"
+                  placeholder="นามสกุล"></div>
+            </div>
+            <div class="fg"><label class="fl">อีเมล <span>*</span></label><input
+                class="fi2" id="r-email" type="email"
+                placeholder="your@email.com"></div>
+            <div class="fg" id="r-extra-fg"><label class="fl"
+                id="r-extra-lbl">มหาวิทยาลัย</label><input class="fi2"
+                id="r-extra" type="text" placeholder="ชื่อมหาวิทยาลัย"></div>
+            <div class="fg"><label class="fl">รหัสผ่าน
+                <span>*</span></label><div class="pw-wrap"><input class="fi2"
+                  id="r-pw" type="password"
+                  placeholder="อย่างน้อย 6 ตัวอักษร"><span class="pw-eye"
+                  onclick="togglePw('r-pw',this)">👁</span></div></div>
+            <button class="l-submit" onclick="doRegister()">สมัครสมาชิก
+              →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ SCREEN 3: APP ══════════ -->
+    <div id="screen-app" class="screen app-screen">
+      <!-- SIDEBAR -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sb-logo"><div class="sb-logo-text">⚡ InternTrack</div><div
+            class="sb-logo-sub">Internship Management</div></div>
+        <div class="sb-role-badge rb-s" id="sb-badge">🎒 นักศึกษา</div>
+        <nav class="sb-nav" id="sb-nav"></nav>
+        <div class="sb-footer">
+          <div class="sb-user">
+            <div class="sb-ava ava-t" id="sb-ava">ส</div>
+            <div><div class="sb-uname" id="sb-uname">ผู้ใช้</div><div
+                class="sb-urole" id="sb-urole">นักศึกษา</div></div>
+            <button class="sb-logout" onclick="doLogout()"
+              title="ออกจากระบบ">⏻</button>
+          </div>
+        </div>
+      </aside>
+      <!-- MAIN -->
+      <div class="app-main">
+        <header class="topbar">
+          <div class="tb-title" id="tb-title">Dashboard</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="tb-search"><span
+                style="font-size:13px;color:var(--text3)">🔍</span><input
+                type="text" placeholder="ค้นหา..." id="search-inp"
+                oninput="handleSearch()"></div>
+            <div class="notif-btn">🔔<div class="notif-dot"></div></div>
+            <button class="btn btn-teal btn-sm" id="tb-action-btn"
+              onclick="tbAction()">+ เพิ่ม</button>
+          </div>
+        </header>
+        <div class="content-area" id="content-area">
+
+          <!-- ─── STUDENT: DASHBOARD ─── -->
+          <div class="panel" id="panel-s-dash">
+            <div class="pg-head"><h2>🏠 Dashboard นักศึกษา</h2><p
+                id="s-welcome-msg">ยินดีต้อนรับ!
+                ดูภาพรวมการฝึกงานของคุณ</p></div>
+            <div class="stat-grid">
+              <div class="stat-box sb1"><div class="stat-ico">📝</div><div
+                  class="stat-lbl">บันทึกที่ส่ง</div><div class="stat-val"
+                  id="sd-diaries">0</div><div
+                  class="stat-sub">รายการ</div></div>
+              <div class="stat-box sb2"><div class="stat-ico">⏰</div><div
+                  class="stat-lbl">ชั่วโมงรวม</div><div class="stat-val"
+                  id="sd-hours">0</div><div class="stat-sub">ชั่วโมง</div></div>
+              <div class="stat-box sb3"><div class="stat-ico">📅</div><div
+                  class="stat-lbl">สัปดาห์ที่</div><div
+                  class="stat-val">8</div><div class="stat-sub">จาก 12
+                  สัปดาห์</div></div>
+              <div class="stat-box sb4"><div class="stat-ico">⭐</div><div
+                  class="stat-lbl">คะแนนล่าสุด</div><div class="stat-val"
+                  id="sd-score" style="color:var(--teal)">—</div><div
+                  class="stat-sub">จากอาจารย์</div></div>
+            </div>
+            <div class="grid2">
+              <div class="card">
+                <div class="card-head"><div class="card-title">⏰
+                    เช็คอินวันนี้</div></div>
+                <div class="card-body" style="text-align:center;padding:24px">
+                  <div
+                    style="font-family:'Kanit';font-size:46px;font-weight:900;color:var(--teal);letter-spacing:-2px;line-height:1"
+                    id="d-clock">--:--:--</div>
+                  <div
+                    style="font-size:12px;color:var(--text2);margin-top:5px;margin-bottom:18px"
+                    id="d-date-lbl">--</div>
+                  <div
+                    style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                    <button class="btn btn-teal btn-sm" id="d-ci-btn"
+                      onclick="checkIn()">🟢 เช็คอินเข้างาน</button>
+                    <button class="btn btn-danger btn-sm" id="d-co-btn"
+                      onclick="checkOut()" style="display:none">🔴
+                      เช็คเอาท์ออกงาน</button>
+                  </div>
+                  <div
+                    style="display:flex;gap:20px;justify-content:center;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)">
+                    <div><div
+                        style="font-family:'Kanit';font-size:17px;font-weight:800;color:var(--emerald)"
+                        id="d-in-t">—</div><div
+                        style="font-size:10px;color:var(--text3)">เวลาเข้า</div></div>
+                    <div><div
+                        style="font-family:'Kanit';font-size:17px;font-weight:800;color:var(--rose)"
+                        id="d-out-t">—</div><div
+                        style="font-size:10px;color:var(--text3)">เวลาออก</div></div>
+                    <div><div
+                        style="font-family:'Kanit';font-size:17px;font-weight:800;color:var(--teal)"
+                        id="d-worked">0 ชม.</div><div
+                        style="font-size:10px;color:var(--text3)">วันนี้</div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-head"><div class="card-title">📋
+                    บันทึกล่าสุด</div><button class="btn btn-sm btn-outline"
+                    onclick="switchPanel('s-diary')">ดูทั้งหมด →</button></div>
+                <div class="card-body" style="max-height:250px;overflow-y:auto"
+                  id="sd-recent"></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head"><div class="card-title">📅
+                  การส่งบันทึกสัปดาห์นี้</div></div>
+              <div class="card-body">
+                <div
+                  style="display:flex;justify-content:space-between;margin-bottom:8px">
+                  <span style="font-size:10px;color:var(--text3)">จ</span><span
+                    style="font-size:10px;color:var(--text3)">อ</span><span
+                    style="font-size:10px;color:var(--text3)">พ</span><span
+                    style="font-size:10px;color:var(--text3)">พฤ</span><span
+                    style="font-size:10px;color:var(--text3)">ศ</span><span
+                    style="font-size:10px;color:var(--text3)">ส</span><span
+                    style="font-size:10px;color:var(--text3)">อา</span>
+                </div>
+                <div class="att-grid" id="s-week-grid"></div>
+                <div
+                  style="display:flex;gap:18px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--text2)">
+                  <span>✅ ส่งแล้ว: <strong id="wk-sent"
+                      style="color:var(--emerald)">0</strong></span>
+                  <span>⏳ เหลือ: <strong id="wk-left"
+                      style="color:var(--amber)">5</strong></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ─── STUDENT: DIARY ─── -->
+          <div class="panel" id="panel-s-diary">
+            <div class="pg-head"><h2>📝
+                บันทึกประจำวัน</h2><p>บันทึกกิจกรรมและสิ่งที่เรียนรู้ทุกวัน
+                อาจารย์จะตรวจสอบและ comment ได้</p></div>
+            <div class="diary-hdr">
+              <span
+                style="font-size:13px;color:var(--teal);font-weight:700">📅</span>
+              <input type="date" id="diary-date" class="diary-date-inp">
+              <span id="diary-wday"
+                style="font-size:12px;color:var(--text2)"></span>
+              <div style="margin-left:auto;font-size:11px;color:var(--text3)"
+                id="d-char">0 ตัวอักษร</div>
+            </div>
+            <div class="grid2">
+              <div>
+                <div class="card">
+                  <div class="card-head"><div class="card-title">✏️
+                      กรอกบันทึก</div></div>
+                  <div class="card-body">
+                    <div class="fg"><label class="fl2">หัวข้อสรุปวันนี้
+                        <span>*</span></label><input class="fi3" id="d-title"
+                        type="text" placeholder="สรุปงานที่ทำในวันนี้..."></div>
+                    <div class="fg"><label class="fl2">งานที่ทำวันนี้
+                        <span>*</span></label><textarea class="fi3" id="d-work"
+                        rows="4" placeholder="อธิบายงานโดยละเอียด..."
+                        oninput="updateDiaryCount()"></textarea></div>
+                    <div class="form-row2">
+                      <div class="fg"><label
+                          class="fl2">สิ่งที่เรียนรู้</label><textarea
+                          class="fi3" id="d-learn" rows="3"
+                          placeholder="ความรู้ใหม่..."></textarea></div>
+                      <div class="fg"><label class="fl2">ปัญหา /
+                          แผนต่อ</label><textarea class="fi3" id="d-prob"
+                          rows="3"
+                          placeholder="อุปสรรค + แผน..."></textarea></div>
+                    </div>
+                    <div class="form-row2">
+                      <div class="fg"><label
+                          class="fl2">ชั่วโมงทำงาน</label><select class="fi3"
+                          id="d-hrs"><option>4</option><option>5</option><option>6</option><option
+                            selected>7</option><option>8</option><option>9</option></select></div>
+                      <div class="fg"><label
+                          class="fl2">ระดับความยาก</label><select class="fi3"
+                          id="d-diff"><option>ง่าย</option><option
+                            selected>ปกติ</option><option>ยาก</option><option>ยากมาก</option></select></div>
+                    </div>
+                    <div class="fg"><label class="fl2">ความรู้สึกวันนี้</label>
+                      <div class="mood-sel" id="mood-sel">
+                        <button class="mood-opt" onclick="pickMood(this,'😊')"
+                          title="ดีมาก">😊</button>
+                        <button class="mood-opt sel"
+                          onclick="pickMood(this,'🙂')" title="ดี">🙂</button>
+                        <button class="mood-opt" onclick="pickMood(this,'😐')"
+                          title="ปกติ">😐</button>
+                        <button class="mood-opt" onclick="pickMood(this,'😔')"
+                          title="เหนื่อย">😔</button>
+                        <button class="mood-opt" onclick="pickMood(this,'😵')"
+                          title="ยากมาก">😵</button>
+                      </div>
+                    </div>
+                    <div class="fg"><label class="fl2">ทักษะที่ฝึก <small
+                          style="text-transform:none;letter-spacing:0;color:var(--text3)">(Enter
+                          เพิ่ม)</small></label>
+                      <div style="display:flex;gap:7px"><input class="fi3"
+                          id="skill-inp" type="text"
+                          placeholder="เช่น React, SQL, Git..."
+                          onkeydown="if(event.key==='Enter'){event.preventDefault();addSkill()}"><button
+                          class="btn btn-outline btn-sm"
+                          onclick="addSkill()">+</button></div>
+                      <div class="skill-tags" id="skill-tags"><div
+                          class="skill-chip">JavaScript <span class="rm"
+                            onclick="this.parentElement.remove()">×</span></div></div>
+                    </div>
+                    <div
+                      style="display:flex;gap:9px;margin-top:6px;flex-wrap:wrap">
+                      <button class="btn btn-outline btn-sm"
+                        onclick="saveDraft()">💾 ร่าง</button>
+                      <button class="btn btn-teal" onclick="submitDiary()">📤
+                        ส่งบันทึก</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="card">
+                  <div class="card-head"><div class="card-title">📚
+                      บันทึกที่ผ่านมา</div><span
+                      style="font-size:11px;color:var(--text2)" id="diary-cnt">0
+                      รายการ</span></div>
+                  <div style="max-height:540px;overflow-y:auto;padding:14px"
+                    id="diary-hist"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ─── STUDENT: ATTENDANCE ─── -->
+          <div class="panel" id="panel-s-att">
+            <div class="pg-head"><h2>⏰
+                เวลาเข้า-ออกงาน</h2><p>บันทึกและดูประวัติการเช็คอิน-เช็คเอาท์
+                สรุปชั่วโมงการทำงาน</p></div>
+            <div class="clock-widget">
+              <div class="cw-time" id="cw-clock">--:--:--</div>
+              <div class="cw-date" id="cw-date-lbl">--</div>
+              <div
+                style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+                <button class="btn btn-teal" id="att-ci-btn"
+                  onclick="checkIn()">🟢 เช็คอินเข้างาน</button>
+                <button class="btn btn-danger" id="att-co-btn"
+                  onclick="checkOut()" style="display:none">🔴
+                  เช็คเอาท์ออกงาน</button>
+                <span id="att-sess"
+                  style="font-size:12px;color:var(--text2)"></span>
+              </div>
+              <div class="cw-stats">
+                <div><div class="cw-stat-v" id="att-days">0</div><div
+                    class="cw-stat-l">วันเข้างาน</div></div>
+                <div><div class="cw-stat-v" id="att-hrs">0</div><div
+                    class="cw-stat-l">ชั่วโมงรวม</div></div>
+                <div><div class="cw-stat-v" id="att-late"
+                    style="color:var(--rose)">0</div><div
+                    class="cw-stat-l">มาสาย</div></div>
+                <div><div class="cw-stat-v" id="att-abs"
+                    style="color:var(--amber)">0</div><div
+                    class="cw-stat-l">ขาดงาน</div></div>
+              </div>
+            </div>
+            <div class="grid2">
+              <div class="card">
+                <div class="card-head"><div class="card-title">📋
+                    ประวัติเข้างาน</div></div>
+                <div style="max-height:360px;overflow-y:auto;padding:14px"
+                  id="att-hist"></div>
+              </div>
+              <div>
+                <div class="card" style="margin-bottom:16px">
+                  <div class="card-head"><div class="card-title">📊
+                      สถิติ</div></div>
+                  <div class="card-body">
+                    <div style="margin-bottom:14px"><div
+                        style="display:flex;justify-content:space-between;margin-bottom:5px"><span
+                          style="font-size:12px">ชั่วโมงสะสม</span><span
+                          style="font-size:12px;font-weight:700;color:var(--teal)"
+                          id="att-mon-h">0/168</span></div><div class="pb"
+                        style="height:7px"><div class="pf pf-t" id="att-mon-pb"
+                          style="width:0%"></div></div></div>
+                    <div><div
+                        style="display:flex;justify-content:space-between;margin-bottom:5px"><span
+                          style="font-size:12px">เปอร์เซ็นต์เข้างาน</span><span
+                          style="font-size:12px;font-weight:700;color:var(--emerald)"
+                          id="att-pct">100%</span></div><div class="pb"
+                        style="height:7px"><div class="pf pf-e" id="att-pct-pb"
+                          style="width:100%"></div></div></div>
+                    <div
+                      style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+                      <div
+                        style="font-size:10px;color:var(--text3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.5px">ชั่วโมงรายวันสัปดาห์นี้</div>
+                      <div class="bar-chart" id="att-bars"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-head"><div class="card-title">✏️
+                      บันทึกด้วยตัวเอง</div><span
+                      style="font-size:10px;color:var(--text3)">กรณีลืมเช็คอิน</span></div>
+                  <div class="card-body">
+                    <div class="form-row3" style="margin-bottom:12px">
+                      <div class="fg"><label class="fl2">วันที่</label><input
+                          class="fi3" id="man-d" type="date"></div>
+                      <div class="fg"><label class="fl2">เวลาเข้า</label><input
+                          class="fi3" id="man-in" type="time"
+                          value="08:00"></div>
+                      <div class="fg"><label class="fl2">เวลาออก</label><input
+                          class="fi3" id="man-out" type="time"
+                          value="17:00"></div>
+                    </div>
+                    <div class="fg"><label class="fl2">หมายเหตุ</label><input
+                        class="fi3" id="man-note" type="text"
+                        placeholder="เช่น ลืมเช็คอิน / WFH"></div>
+                    <button class="btn btn-teal btn-sm"
+                      onclick="addManualEntry()">💾 บันทึก</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ─── STUDENT: EVALUATION ─── -->
+          <div class="panel" id="panel-s-eval">
+            <div class="pg-head"><h2>⭐ ผลการประเมิน</h2><p>ดูคะแนนและ feedback
+                จากอาจารย์ที่ปรึกษา</p></div>
+            <div id="s-eval-wrap">
+              <div
+                style="text-align:center;padding:56px;color:var(--text3)"><div
+                  style="font-size:44px;margin-bottom:14px">📋</div><div
+                  style="font-size:14px;font-weight:600;margin-bottom:6px">ยังไม่มีผลประเมิน</div><div
+                  style="font-size:12px">อาจารย์ยังไม่ได้ประเมิน
+                  หรืออยู่ระหว่างดำเนินการ</div></div>
+            </div>
+          </div>
+
+          <!-- ─── STUDENT: PROFILE ─── -->
+          <div class="panel" id="panel-s-profile">
+            <div class="pg-head"><h2>👤
+                ข้อมูลส่วนตัว</h2><p>กรอกและอัปเดตข้อมูลการฝึกงานของคุณ</p></div>
+            <div class="grid2">
+              <div class="card">
+                <div class="card-head"><div class="card-title">👤
+                    ข้อมูลนักศึกษา</div></div>
+                <div class="card-body">
+                  <div class="fg"><label class="fl2">ชื่อ-นามสกุล</label><input
+                      class="fi3" id="p-name" type="text"
+                      placeholder="ชื่อ นามสกุล"></div>
+                  <div class="form-row2"><div class="fg"><label
+                        class="fl2">รหัสนักศึกษา</label><input class="fi3"
+                        id="p-sid" type="text"
+                        placeholder="รหัสนักศึกษา"></div><div class="fg"><label
+                        class="fl2">เบอร์โทร</label><input class="fi3"
+                        id="p-tel" type="tel"
+                        placeholder="0xx-xxx-xxxx"></div></div>
+                  <div class="fg"><label class="fl2">มหาวิทยาลัย</label><input
+                      class="fi3" id="p-uni" type="text"
+                      placeholder="มหาวิทยาลัย"></div>
+                  <div class="form-row2"><div class="fg"><label
+                        class="fl2">คณะ</label><input class="fi3" id="p-fac"
+                        type="text" placeholder="คณะ"></div><div
+                      class="fg"><label class="fl2">สาขา</label><input
+                        class="fi3" id="p-major" type="text"
+                        placeholder="สาขาวิชา"></div></div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-head"><div class="card-title">🏢
+                    ข้อมูลฝึกงาน</div></div>
+                <div class="card-body">
+                  <div class="fg"><label class="fl2">บริษัท /
+                      องค์กร</label><input class="fi3" id="p-comp" type="text"
+                      placeholder="ชื่อบริษัท"></div>
+                  <div class="fg"><label class="fl2">แผนก</label><input
+                      class="fi3" id="p-dept" type="text"
+                      placeholder="แผนก / ฝ่าย"></div>
+                  <div class="form-row2"><div class="fg"><label
+                        class="fl2">วันเริ่ม</label><input class="fi3"
+                        id="p-start" type="date"></div><div class="fg"><label
+                        class="fl2">วันสิ้นสุด</label><input class="fi3"
+                        id="p-end" type="date"></div></div>
+                  <div class="fg"><label class="fl2">พี่เลี้ยง
+                      (Supervisor)</label><input class="fi3" id="p-sup"
+                      type="text" placeholder="ชื่อพี่เลี้ยง"></div>
+                  <button class="btn btn-teal btn-sm" onclick="saveProfile()">💾
+                    บันทึกข้อมูล</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ TEACHER: DASHBOARD ═══ -->
+          <div class="panel" id="panel-t-dash">
+            <div class="pg-head"><h2>🏠 Dashboard
+                อาจารย์</h2><p>ภาพรวมนักศึกษาในความดูแลของท่าน</p></div>
+            <div class="stat-grid">
+              <div class="stat-box sb1"><div class="stat-ico">👥</div><div
+                  class="stat-lbl">นักศึกษาทั้งหมด</div><div class="stat-val"
+                  id="td-total">0</div><div
+                  class="stat-sub">ในความดูแล</div></div>
+              <div class="stat-box sb2"><div class="stat-ico">✅</div><div
+                  class="stat-lbl">ส่งครบสัปดาห์นี้</div><div class="stat-val"
+                  id="td-ok">0</div><div class="stat-sub">คน</div></div>
+              <div class="stat-box sb3"><div class="stat-ico">⏳</div><div
+                  class="stat-lbl">รอประเมิน</div><div class="stat-val"
+                  id="td-eval" style="color:var(--amber)">0</div><div
+                  class="stat-sub">คน</div></div>
+              <div class="stat-box sb4"><div class="stat-ico">⚠️</div><div
+                  class="stat-lbl">ไม่ส่งบันทึก</div><div class="stat-val"
+                  id="td-miss" style="color:var(--rose)">0</div><div
+                  class="stat-sub">คน</div></div>
+            </div>
+            <div class="grid2">
+              <div class="card">
+                <div class="card-head"><div class="card-title">👥
+                    นักศึกษาในดูแล</div><button class="btn btn-sm btn-outline"
+                    onclick="switchPanel('t-interns')">ดูทั้งหมด
+                    →</button></div>
+                <div
+                  style="overflow-x:auto"><table><thead><tr><th>ชื่อ</th><th>ความก้าวหน้า</th><th>สถานะ</th><th></th></tr></thead><tbody
+                      id="td-intern-tbl"></tbody></table></div>
+              </div>
+              <div class="card">
+                <div class="card-head"><div class="card-title">🕐
+                    กิจกรรมล่าสุด</div></div>
+                <div class="card-body">
+                  <div class="act-item"><div
+                      class="act-ico ai-t">📝</div><div><div
+                        class="act-text"><strong>สมชาย ใจดี</strong>
+                        ส่งบันทึกประจำวัน</div><div class="act-time">30
+                        นาทีที่แล้ว</div></div></div>
+                  <div class="act-item"><div
+                      class="act-ico ai-a">⚠️</div><div><div
+                        class="act-text"><strong>กิตติพงษ์ ลมเย็น</strong>
+                        ยังไม่ส่งบันทึก 3 วัน</div><div class="act-time">2
+                        ชั่วโมงที่แล้ว</div></div></div>
+                  <div class="act-item"><div
+                      class="act-ico ai-b">⭐</div><div><div
+                        class="act-text">ถึงกำหนดประเมิน <strong>วิภา
+                          สว่าง</strong></div><div
+                        class="act-time">เมื่อวาน</div></div></div>
+                  <div class="act-item"><div
+                      class="act-ico ai-r">❌</div><div><div
+                        class="act-text"><strong>ธนภัทร มีสุข</strong> ขาดงาน 1
+                        วัน</div><div class="act-time">2
+                        วันที่แล้ว</div></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="tbl-wrap">
+              <div class="tbl-head"><div class="tbl-title">📬
+                  บันทึกที่รอตรวจ</div><button class="btn btn-sm btn-blue"
+                  onclick="switchPanel('t-review')">ตรวจสอบทั้งหมด
+                  →</button></div>
+              <table><thead><tr><th>นักศึกษา</th><th>วันที่</th><th>หัวข้อ</th><th>Mood</th><th>สถานะ</th><th></th></tr></thead>
+                <tbody id="td-pending"></tbody></table>
+            </div>
+          </div>
+
+          <!-- ═══ TEACHER: INTERN LIST ═══ -->
+          <div class="panel" id="panel-t-interns">
+            <div class="pg-head"><h2>👥
+                รายชื่อนักศึกษา</h2><p>จัดการและติดตามนักศึกษาในความดูแล</p></div>
+            <div class="filter-row">
+              <button class="fchip fb fa"
+                onclick="filterInterns(this,'all')">ทั้งหมด</button>
+              <button class="fchip fb"
+                onclick="filterInterns(this,'active')">กำลังฝึกงาน</button>
+              <button class="fchip fb"
+                onclick="filterInterns(this,'pending')">ต้องติดตาม</button>
+              <button class="fchip fb"
+                onclick="filterInterns(this,'done')">เสร็จสิ้น</button>
+            </div>
+            <div class="tbl-wrap">
+              <div class="tbl-head"><div
+                  class="tbl-title">รายชื่อทั้งหมด</div><button
+                  class="btn btn-sm btn-blue" onclick="openAddInternModal()">+
+                  เพิ่มนักศึกษา</button></div>
+              <table><thead><tr><th>นักศึกษา</th><th>มหาวิทยาลัย</th><th>แผนก</th><th>ความก้าวหน้า</th><th>สถานะ</th><th></th></tr></thead>
+                <tbody id="t-intern-list"></tbody></table>
+            </div>
+          </div>
+
+          <!-- ═══ TEACHER: REVIEW DIARIES ═══ -->
+          <div class="panel" id="panel-t-review">
+            <div class="pg-head"><h2>📝 ตรวจบันทึกประจำวัน</h2><p>ตรวจสอบ
+                อนุมัติ และ comment บันทึกของนักศึกษา</p></div>
+            <div
+              style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;align-items:center">
+              <label class="fl2" style="margin:0">เลือกนักศึกษา:</label>
+              <select class="fi3" id="review-intern-sel"
+                onchange="loadReviewDiaries()" style="width:240px">
+                <option value="all">— ทั้งหมด —</option>
+              </select>
+              <div style="margin-left:auto;display:flex;gap:8px">
+                <button class="btn btn-success btn-sm"
+                  onclick="approveAllDiaries()">✅ อนุมัติทั้งหมด</button>
+                <button class="btn btn-amber btn-sm" onclick="notifyAll()">📧
+                  แจ้งเตือนทั้งหมด</button>
+              </div>
+            </div>
+            <div class="grid2">
+              <div id="review-list"></div>
+              <div>
+                <div class="card" id="review-detail-card" style="display:none">
+                  <div class="card-head"><div class="card-title">💬
+                      ตรวจสอบบันทึก</div></div>
+                  <div class="card-body" id="review-detail-body"></div>
+                </div>
+                <div
+                  style="text-align:center;padding:40px;color:var(--text3);font-size:13px"
+                  id="review-placeholder">← เลือกบันทึกเพื่อตรวจสอบ</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ TEACHER: ATTENDANCE VIEW ═══ -->
+          <div class="panel" id="panel-t-att">
+            <div class="pg-head"><h2>⏰
+                ติดตามเวลาเข้างาน</h2><p>ดูสถิติการเข้างานของนักศึกษาทุกคน</p></div>
+            <div class="tbl-wrap">
+              <div class="tbl-head"><div
+                  class="tbl-title">สถิติการเข้างานรายคน</div></div>
+              <table><thead><tr><th>นักศึกษา</th><th>วันเข้างาน</th><th>ชั่วโมงรวม</th><th>มาสาย</th><th>ขาดงาน</th><th>เปอร์เซ็นต์</th><th>สถานะ</th></tr></thead>
+                <tbody id="t-att-tbl"></tbody></table>
+            </div>
+          </div>
+
+          <!-- ═══ TEACHER: EVALUATE ═══ -->
+          <div class="panel" id="panel-t-eval">
+            <div class="pg-head"><h2>⭐
+                ประเมินผลนักศึกษา</h2><p>กรอกแบบฟอร์มประเมินผลการฝึกงาน</p></div>
+            <div
+              style="display:flex;gap:12px;margin-bottom:18px;align-items:center;flex-wrap:wrap">
+              <label class="fl2"
+                style="margin:0">เลือกนักศึกษาที่จะประเมิน:</label>
+              <select class="fi3" id="eval-intern-sel" onchange="loadEvalForm()"
+                style="width:240px"></select>
+            </div>
+            <div class="grid2">
+              <div>
+                <div id="eval-intern-info" style="display:none" class="ipb">
+                  <div class="ipb-ava c1" id="ei-ava">ส</div>
+                  <div><div class="ipb-name" id="ei-name">ชื่อ</div><div
+                      class="ipb-meta" id="ei-meta">รายละเอียด</div></div>
+                  <div id="ei-prev-score"
+                    style="margin-left:auto;text-align:right"></div>
+                </div>
+                <div class="card">
+                  <div class="card-head"><div class="card-title">📋
+                      เกณฑ์การประเมิน</div></div>
+                  <div class="card-body">
+                    <div class="eval-grid" id="eval-criteria-grid"></div>
+                    <div class="fg"><label class="fl2">คะแนนรวม
+                        (รูดเลือก)</label>
+                      <div style="display:flex;align-items:center;gap:12px">
+                        <input type="range" min="1" max="5" step="0.1" value="4"
+                          id="eval-overall"
+                          oninput="document.getElementById('eval-overall-val').textContent=parseFloat(this.value).toFixed(1)"
+                          style="flex:1;accent-color:var(--teal)">
+                        <span id="eval-overall-val"
+                          style="font-family:'Kanit';font-size:22px;font-weight:900;color:var(--teal);min-width:40px">4.0</span>
+                        <span
+                          style="font-size:13px;color:var(--text3)">/5.0</span>
+                      </div>
+                    </div>
+                    <div class="fg"><label class="fl2">ความคิดเห็น / Feedback
+                        <span>*</span></label><textarea class="fi3"
+                        id="eval-comment" rows="4"
+                        placeholder="ระบุจุดเด่น จุดที่ต้องพัฒนา และข้อแนะนำ..."></textarea></div>
+                    <div class="fg"><label class="fl2">รอบการประเมิน</label>
+                      <select class="fi3"
+                        id="eval-round"><option>ประเมินกลางเทอม (รอบที่
+                          1)</option><option>ประเมินปลายเทอม (รอบที่
+                          2)</option><option>ประเมินสรุปสิ้นสุด</option></select>
+                    </div>
+                    <div style="display:flex;gap:9px;flex-wrap:wrap">
+                      <button class="btn btn-outline btn-sm"
+                        onclick="saveDraftEval()">💾 บันทึกร่าง</button>
+                      <button class="btn btn-blue" onclick="submitEval()">📤
+                        ส่งผลประเมิน</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="card">
+                  <div class="card-head"><div class="card-title">📊
+                      ประวัติการประเมิน</div></div>
+                  <div style="max-height:480px;overflow-y:auto;padding:16px"
+                    id="eval-history"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ TEACHER: REPORTS ═══ -->
+          <div class="panel" id="panel-t-reports">
+            <div class="pg-head"><h2>📄
+                รายงานสรุป</h2><p>สรุปผลการฝึกงานรายบุคคลและภาพรวม</p></div>
+            <div class="tbl-wrap">
+              <div class="tbl-head"><div
+                  class="tbl-title">ผลการประเมินทั้งหมด</div><button
+                  class="btn btn-sm btn-outline" onclick="exportCSV()">⬇ Export
+                  CSV</button></div>
+              <table><thead><tr><th>นักศึกษา</th><th>ทักษะ</th><th>ความรับผิดชอบ</th><th>ทีมเวิร์ค</th><th>สื่อสาร</th><th>คะแนนรวม</th><th>เกรด</th><th>ผู้ประเมิน</th></tr></thead>
+                <tbody id="t-report-tbl"></tbody></table>
+            </div>
+            <div class="grid3">
+              <div class="card"><div class="card-head"><div
+                    class="card-title">📊 IT / Dev</div></div><div
+                  class="card-body" style="text-align:center"><div
+                    style="font-family:'Kanit';font-size:36px;font-weight:900;color:var(--emerald)">4.5</div><div
+                    style="font-size:11px;color:var(--text2)">4 คน ·
+                    ดีเยี่ยม</div></div></div>
+              <div class="card"><div class="card-head"><div
+                    class="card-title">📣 Marketing</div></div><div
+                  class="card-body" style="text-align:center"><div
+                    style="font-family:'Kanit';font-size:36px;font-weight:900;color:var(--blue)">4.1</div><div
+                    style="font-size:11px;color:var(--text2)">3 คน ·
+                    ดี</div></div></div>
+              <div class="card"><div class="card-head"><div
+                    class="card-title">💰 Finance</div></div><div
+                  class="card-body" style="text-align:center"><div
+                    style="font-family:'Kanit';font-size:36px;font-weight:900;color:var(--amber)">3.8</div><div
+                    style="font-size:11px;color:var(--text2)">3 คน ·
+                    ปานกลาง</div></div></div>
+            </div>
+          </div>
+
+        </div><!-- /content-area -->
+      </div><!-- /app-main -->
+    </div><!-- /screen-app -->
+
+    <!-- ══════════ SCREEN 4: HR / COMPANY ══════════ -->
+    <div id="screen-hr" class="screen app-screen">
+      <aside class="sidebar" id="sidebar-hr">
+        <div class="sb-logo"><div class="sb-logo-text">⚡ InternTrack</div><div
+            class="sb-logo-sub">Company / HR Portal</div></div>
+        <div class="sb-role-badge rb-h" id="sb-hr-badge">🏢 สถานประกอบการ</div>
+        <nav class="sb-nav">
+          <div class="sb-sec"><div class="sb-sec-lbl">ภาพรวม</div>
+            <button class="sb-item" onclick="switchHRPage('hr-dashboard')"><span
+                class="sb-icon">🏠</span>Dashboard</button>
+            <button class="sb-item" onclick="switchHRPage('hr-interns')"><span
+                class="sb-icon">👥</span>นักศึกษาฝึกงาน <span class="sb-bdg"
+                id="hr-intern-cnt">8</span></button>
+            <button class="sb-item" onclick="switchHRPage('hr-tracking')"><span
+                class="sb-icon">📊</span>ติดตามความก้าวหน้า <span
+                class="sb-bdg w">3</span></button>
+          </div>
+          <div class="sb-sec"><div class="sb-sec-lbl">การประเมิน</div>
+            <button class="sb-item"
+              onclick="switchHRPage('hr-evaluation')"><span
+                class="sb-icon">⭐</span>ประเมินผล</button>
+            <button class="sb-item" onclick="switchHRPage('hr-reports')"><span
+                class="sb-icon">📄</span>รายงาน</button>
+          </div>
+          <div class="sb-sec"><div class="sb-sec-lbl">ระบบ</div>
+            <button class="sb-item" onclick="switchHRPage('hr-settings')"><span
+                class="sb-icon">⚙️</span>ตั้งค่า</button>
+          </div>
+        </nav>
+        <div class="sb-footer">
+          <div class="sb-user">
+            <div class="sb-ava" id="hr-ava"
+              style="background:linear-gradient(135deg,var(--indigo),#8b5cf6);color:#fff">ผ</div>
+            <div><div class="sb-uname" id="hr-uname">ผู้ดูแลระบบ</div><div
+                class="sb-urole">HR Department</div></div>
+            <button class="sb-logout" onclick="doLogout()"
+              title="ออกจากระบบ">⏻</button>
+          </div>
+        </div>
+      </aside>
+      <div class="app-main">
+        <header class="topbar">
+          <div class="tb-title" id="hr-page-title">Dashboard</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="tb-search"><span
+                style="font-size:13px;color:var(--text3)">🔍</span><input
+                type="text" placeholder="ค้นหานักศึกษา..." id="hr-search"
+                oninput="hrFilterInterns()"></div>
+            <div class="notif-btn">🔔<div class="notif-dot"></div></div>
+            <button class="btn btn-sm" id="hr-action-btn"
+              onclick="openHRAddModal()"
+              style="background:var(--indigo);color:#fff">+
+              เพิ่มนักศึกษา</button>
+          </div>
+        </header>
+        <div class="content-area" id="hr-content-area">
+
+          <!-- HR DASHBOARD -->
+          <div class="panel active" id="panel-hr-dashboard">
+            <div class="pg-head"><h2>🏠 Dashboard
+                สถานประกอบการ</h2><p>ภาพรวมนักศึกษาฝึกงานทั้งหมดในองค์กร</p></div>
+            <div class="stat-grid">
+              <div class="stat-box sb1"><div class="stat-ico">👥</div><div
+                  class="stat-lbl">นักศึกษาทั้งหมด</div><div class="stat-val"
+                  id="hr-stat-total">8</div><div
+                  class="stat-sub">ในองค์กร</div></div>
+              <div class="stat-box sb2"><div class="stat-ico">✅</div><div
+                  class="stat-lbl">กำลังฝึกงาน</div><div class="stat-val"
+                  id="hr-stat-active">6</div><div
+                  class="stat-sub">สถานะปกติ</div></div>
+              <div class="stat-box sb3"><div class="stat-ico">⏰</div><div
+                  class="stat-lbl">รอประเมิน</div><div class="stat-val"
+                  id="hr-stat-pending" style="color:var(--amber)">3</div><div
+                  class="stat-sub">ต้องดำเนินการ</div></div>
+              <div class="stat-box"
+                style="border-color:rgba(99,102,241,.2)"><div
+                  class="stat-ico">🏆</div><div
+                  class="stat-lbl">คะแนนเฉลี่ย</div><div class="stat-val"
+                  style="color:var(--indigo)">4.2</div><div
+                  class="stat-sub">ภาพรวมองค์กร</div></div>
+            </div>
+            <div class="grid2">
+              <div class="card">
+                <div class="card-head"><div class="card-title">🕐
+                    กิจกรรมล่าสุด</div></div>
+                <div class="card-body">
+                  <div class="act-item"><div
+                      class="act-ico ai-t">✅</div><div><div
+                        class="act-text"><strong>สมชาย ใจดี</strong>
+                        ส่งรายงานความก้าวหน้าสัปดาห์ที่ 8</div><div
+                        class="act-time">2 ชั่วโมงที่แล้ว</div></div></div>
+                  <div class="act-item"><div
+                      class="act-ico ai-b">⭐</div><div><div
+                        class="act-text">ประเมินผล <strong>นางสาววิภา
+                          สว่าง</strong> เสร็จสิ้น — 4.5/5</div><div
+                        class="act-time">5 ชั่วโมงที่แล้ว</div></div></div>
+                  <div class="act-item"><div
+                      class="act-ico ai-t">📝</div><div><div
+                        class="act-text">เพิ่มนักศึกษาใหม่ <strong>ธนภัทร
+                          มีสุข</strong> แผนก IT</div><div
+                        class="act-time">เมื่อวาน</div></div></div>
+                  <div class="act-item"><div
+                      class="act-ico ai-a">⚠️</div><div><div
+                        class="act-text"><strong>กิตติพงษ์ ลมเย็น</strong>
+                        ยังไม่ส่งรายงานสัปดาห์ที่ 7</div><div class="act-time">2
+                        วันที่แล้ว</div></div></div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-head"><div class="card-title">📈
+                    นักศึกษาฝึกงานรายเดือน</div></div>
+                <div class="card-body">
+                  <div class="bar-chart" id="hr-chart"></div>
+                  <div
+                    style="margin-top:16px;display:flex;gap:16px;font-size:11px;color:var(--text2)"><span>📊
+                      ส.ค. · ก.ย. · ต.ค. · พ.ย. · ธ.ค. · ม.ค.</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="tbl-wrap">
+              <div class="tbl-head"><div class="tbl-title">📋 นักศึกษาฝึกงาน
+                  (สรุป)</div><button class="btn btn-sm btn-outline"
+                  onclick="switchHRPage('hr-interns')">ดูทั้งหมด
+                  →</button></div>
+              <table><thead><tr><th>นักศึกษา</th><th>แผนก</th><th>วันสิ้นสุด</th><th>ความก้าวหน้า</th><th>สถานะ</th></tr></thead>
+                <tbody id="hr-quick-table"></tbody></table>
+            </div>
+          </div>
+
+          <!-- HR INTERNS -->
+          <div class="panel" id="panel-hr-interns">
+            <div class="pg-head"><h2>👥
+                นักศึกษาฝึกงานทั้งหมด</h2><p>จัดการและติดตามนักศึกษาในองค์กร</p></div>
+            <div class="filter-row">
+              <button class="fchip fb fa"
+                onclick="hrFilterByStatus(this,'all')">ทั้งหมด</button>
+              <button class="fchip fb"
+                onclick="hrFilterByStatus(this,'active')">กำลังฝึกงาน</button>
+              <button class="fchip fb"
+                onclick="hrFilterByStatus(this,'pending')">ต้องติดตาม</button>
+              <button class="fchip fb"
+                onclick="hrFilterByStatus(this,'review')">อยู่ระหว่างประเมิน</button>
+              <button class="fchip fb"
+                onclick="hrFilterByStatus(this,'done')">เสร็จสิ้น</button>
+            </div>
+            <div class="tbl-wrap">
+              <div class="tbl-head"><div class="tbl-title">รายชื่อทั้งหมด</div>
+                <div style="display:flex;gap:8px">
+                  <button class="btn btn-sm btn-outline"
+                    onclick="hrExportCSV()">⬇ Export</button>
+                  <button class="btn btn-sm" onclick="openHRAddModal()"
+                    style="background:var(--indigo);color:#fff">+
+                    เพิ่มใหม่</button>
+                </div>
+              </div>
+              <table><thead><tr><th>นักศึกษา</th><th>มหาวิทยาลัย</th><th>แผนก</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>ความก้าวหน้า</th><th>สถานะ</th><th>การดำเนินการ</th></tr></thead>
+                <tbody id="hr-intern-table"></tbody></table>
+            </div>
+          </div>
+
+          <!-- HR TRACKING -->
+          <div class="panel" id="panel-hr-tracking">
+            <div class="pg-head"><h2>📊
+                ติดตามความก้าวหน้า</h2><p>ติดตามการส่งรายงานและความก้าวหน้ารายบุคคล</p></div>
+            <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
+              <div class="stat-box sb1"><div class="stat-ico">📬</div><div
+                  class="stat-lbl">ส่งรายงานแล้ว (สัปดาห์นี้)</div><div
+                  class="stat-val">7</div><div class="stat-sub">จาก 8 คน
+                  (88%)</div></div>
+              <div class="stat-box sb3"><div class="stat-ico">❌</div><div
+                  class="stat-lbl">ยังไม่ส่งรายงาน</div><div class="stat-val"
+                  style="color:var(--amber)">1</div><div class="stat-sub">⚠
+                  ต้องติดตาม</div></div>
+              <div class="stat-box sb2"><div class="stat-ico">📅</div><div
+                  class="stat-lbl">สัปดาห์ที่ดำเนินการ</div><div
+                  class="stat-val">8</div><div class="stat-sub">จาก 12
+                  สัปดาห์</div></div>
+            </div>
+            <div class="tbl-wrap">
+              <div class="tbl-head"><div class="tbl-title">📊
+                  ติดตามความก้าวหน้ารายบุคคล</div>
+                <button class="btn btn-sm"
+                  onclick="showToast('📧 ส่งการแจ้งเตือนทั้งหมดแล้ว!')"
+                  style="background:var(--indigo);color:#fff">📧
+                  แจ้งเตือนทั้งหมด</button>
+              </div>
+              <table><thead><tr><th>นักศึกษา</th><th>สัปดาห์ที่
+                      6</th><th>สัปดาห์ที่ 7</th><th>สัปดาห์ที่
+                      8</th><th>โดยรวม</th><th>หมายเหตุ</th></tr></thead>
+                <tbody id="hr-tracking-table"></tbody></table>
+            </div>
+          </div>
+
+          <!-- HR EVALUATION -->
+          <div class="panel" id="panel-hr-evaluation">
+            <div class="pg-head"><h2>⭐
+                ประเมินผลนักศึกษา</h2><p>บันทึกผลการประเมินนักศึกษาฝึกงาน</p></div>
+            <div style="display:flex;gap:6px;margin-bottom:18px">
+              <button class="btn btn-sm" id="hr-eval-tab-list"
+                onclick="switchHREvalTab('list')"
+                style="background:var(--indigo);color:#fff">รายการประเมิน</button>
+              <button class="btn btn-sm btn-outline" id="hr-eval-tab-form"
+                onclick="switchHREvalTab('form')">ประเมินใหม่</button>
+            </div>
+            <div id="hr-eval-list">
+              <div class="tbl-wrap">
+                <div class="tbl-head"><div class="tbl-title">⭐
+                    ผลการประเมินทั้งหมด</div></div>
+                <table><thead><tr><th>นักศึกษา</th><th>ทักษะวิชาชีพ</th><th>ความรับผิดชอบ</th><th>การทำงานทีม</th><th>การสื่อสาร</th><th>คะแนนรวม</th><th>ผู้ประเมิน</th></tr></thead>
+                  <tbody id="hr-eval-table"></tbody></table>
+              </div>
+            </div>
+            <div id="hr-eval-form" style="display:none">
+              <div class="card" style="max-width:640px">
+                <div class="card-head"><div class="card-title">📝
+                    แบบประเมินนักศึกษาฝึกงาน</div></div>
+                <div class="card-body">
+                  <div class="fg"><label class="fl2">เลือกนักศึกษา</label>
+                    <select class="fi3" id="hr-eval-intern-sel"><option value>--
+                        เลือกนักศึกษา --</option></select>
+                  </div>
+                  <div class="eval-grid" id="hr-eval-criteria"></div>
+                  <div class="fg"><label class="fl2">ความคิดเห็น /
+                      ข้อเสนอแนะ</label>
+                    <textarea class="fi3" id="hr-eval-comment" rows="3"
+                      placeholder="ระบุข้อเสนอแนะเพิ่มเติม..."></textarea>
+                  </div>
+                  <button class="btn btn-sm" onclick="saveHREval()"
+                    style="background:var(--indigo);color:#fff;width:100%">💾
+                    บันทึกผลการประเมิน</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- HR REPORTS -->
+          <div class="panel" id="panel-hr-reports">
+            <div class="pg-head"><h2>📄
+                รายงาน</h2><p>สรุปผลและออกรายงานต่างๆ</p></div>
+            <div class="grid3" style="margin-bottom:24px">
+              <div class="card" style="cursor:pointer;transition:.2s"
+                onclick="showToast('📄 กำลังสร้างรายงาน...')"
+                onmouseover="this.style.borderColor='var(--indigo)'"
+                onmouseout="this.style.borderColor=''">
+                <div class="card-body"
+                  style="text-align:center;padding:24px"><div
+                    style="font-size:28px;margin-bottom:8px">📊</div><div
+                    style="font-weight:700;margin-bottom:4px">รายงานสรุปภาพรวม</div><div
+                    style="font-size:11px;color:var(--text2)">สรุปข้อมูลนักศึกษาทั้งหมด
+                    สถานะ และผลการประเมิน</div></div>
+              </div>
+              <div class="card" style="cursor:pointer;transition:.2s"
+                onclick="showToast('📈 กำลังสร้างรายงาน...')"
+                onmouseover="this.style.borderColor='var(--indigo)'"
+                onmouseout="this.style.borderColor=''">
+                <div class="card-body"
+                  style="text-align:center;padding:24px"><div
+                    style="font-size:28px;margin-bottom:8px">📈</div><div
+                    style="font-weight:700;margin-bottom:4px">รายงานความก้าวหน้า</div><div
+                    style="font-size:11px;color:var(--text2)">ติดตามความก้าวหน้ารายบุคคล
+                    แยกตามสัปดาห์</div></div>
+              </div>
+              <div class="card" style="cursor:pointer;transition:.2s"
+                onclick="showToast('⭐ กำลังสร้างรายงาน...')"
+                onmouseover="this.style.borderColor='var(--indigo)'"
+                onmouseout="this.style.borderColor=''">
+                <div class="card-body"
+                  style="text-align:center;padding:24px"><div
+                    style="font-size:28px;margin-bottom:8px">⭐</div><div
+                    style="font-weight:700;margin-bottom:4px">รายงานผลการประเมิน</div><div
+                    style="font-size:11px;color:var(--text2)">ผลคะแนนทุกเกณฑ์
+                    เปรียบเทียบรายบุคคลและแผนก</div></div>
+              </div>
+              <div class="card" style="cursor:pointer;transition:.2s"
+                onclick="showToast('🏢 กำลังสร้างรายงาน...')"
+                onmouseover="this.style.borderColor='var(--indigo)'"
+                onmouseout="this.style.borderColor=''">
+                <div class="card-body"
+                  style="text-align:center;padding:24px"><div
+                    style="font-size:28px;margin-bottom:8px">🏢</div><div
+                    style="font-weight:700;margin-bottom:4px">รายงานแยกแผนก</div><div
+                    style="font-size:11px;color:var(--text2)">ดูข้อมูลนักศึกษาแยกตามแผนกต่างๆ
+                    ในองค์กร</div></div>
+              </div>
+              <div class="card" style="cursor:pointer;transition:.2s"
+                onclick="hrExportCSV()"
+                onmouseover="this.style.borderColor='var(--indigo)'"
+                onmouseout="this.style.borderColor=''">
+                <div class="card-body"
+                  style="text-align:center;padding:24px"><div
+                    style="font-size:28px;margin-bottom:8px">⬇️</div><div
+                    style="font-weight:700;margin-bottom:4px">Export ข้อมูล
+                    CSV</div><div
+                    style="font-size:11px;color:var(--text2)">ดาวน์โหลดข้อมูลนักศึกษาทั้งหมดในรูปแบบ
+                    CSV</div></div>
+              </div>
+              <div class="card" style="cursor:pointer;transition:.2s"
+                onclick="showToast('📧 กำลังส่งรายงาน...')"
+                onmouseover="this.style.borderColor='var(--indigo)'"
+                onmouseout="this.style.borderColor=''">
+                <div class="card-body"
+                  style="text-align:center;padding:24px"><div
+                    style="font-size:28px;margin-bottom:8px">📧</div><div
+                    style="font-weight:700;margin-bottom:4px">ส่งรายงานอีเมล</div><div
+                    style="font-size:11px;color:var(--text2)">ส่งรายงานอัตโนมัติไปยังผู้บริหาร
+                    HR รายเดือน</div></div>
+              </div>
+            </div>
+            <div class="tbl-wrap">
+              <div class="tbl-head"><div class="tbl-title">📊
+                  สรุปคะแนนเฉลี่ยรายแผนก</div></div>
+              <table><thead><tr><th>แผนก</th><th>จำนวนนักศึกษา</th><th>คะแนนเฉลี่ย</th><th>ส่งรายงานครบ</th><th>สถานะ</th></tr></thead>
+                <tbody>
+                  <tr><td>IT / Development</td><td>3</td><td><span
+                        style="font-weight:700;color:var(--emerald)">4.5</span></td><td><div
+                        class="pw"><div class="pb"
+                          style="height:6px;flex:1"><div class="pf pf-e"
+                            style="width:90%"></div></div><span
+                          class="pt">90%</span></div></td><td><span
+                        class="status s-ok">ปกติ</span></td></tr>
+                  <tr><td>Marketing</td><td>2</td><td><span
+                        style="font-weight:700;color:var(--blue)">4.1</span></td><td><div
+                        class="pw"><div class="pb"
+                          style="height:6px;flex:1"><div class="pf pf-t"
+                            style="width:78%"></div></div><span
+                          class="pt">78%</span></div></td><td><span
+                        class="status s-ok">ปกติ</span></td></tr>
+                  <tr><td>Finance</td><td>2</td><td><span
+                        style="font-weight:700;color:var(--amber)">3.9</span></td><td><div
+                        class="pw"><div class="pb"
+                          style="height:6px;flex:1"><div class="pf pf-a"
+                            style="width:60%"></div></div><span
+                          class="pt">60%</span></div></td><td><span
+                        class="status s-warn">ต้องติดตาม</span></td></tr>
+                  <tr><td>HR / Admin</td><td>1</td><td><span
+                        style="font-weight:700;color:var(--emerald)">4.7</span></td><td><div
+                        class="pw"><div class="pb"
+                          style="height:6px;flex:1"><div class="pf pf-e"
+                            style="width:100%"></div></div><span
+                          class="pt">100%</span></div></td><td><span
+                        class="status s-ok">ดีเยี่ยม</span></td></tr>
+                </tbody></table>
+            </div>
+          </div>
+
+          <!-- HR SETTINGS -->
+          <div class="panel" id="panel-hr-settings">
+            <div class="pg-head"><h2>⚙️
+                ตั้งค่า</h2><p>ตั้งค่าระบบและข้อมูลองค์กร</p></div>
+            <div style="max-width:600px">
+              <div class="card" style="margin-bottom:18px">
+                <div class="card-head"><div class="card-title">🏢
+                    ข้อมูลองค์กร</div></div>
+                <div class="card-body">
+                  <div class="fg"><label class="fl2">ชื่อบริษัท</label><input
+                      class="fi3" value="บริษัท เทคโนโลยี จำกัด"
+                      type="text"></div>
+                  <div class="fg"><label class="fl2">ระยะเวลาฝึกงาน
+                      (สัปดาห์)</label><input class="fi3" value="12"
+                      type="number"></div>
+                  <div class="fg"><label class="fl2">อีเมลผู้ดูแล
+                      HR</label><input class="fi3" value="hr@company.com"
+                      type="email"></div>
+                  <button class="btn btn-sm"
+                    onclick="showToast('✅ บันทึกการตั้งค่าแล้ว!')"
+                    style="background:var(--indigo);color:#fff">💾
+                    บันทึก</button>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-head"><div class="card-title">🔔
+                    การแจ้งเตือน</div></div>
+                <div class="card-body">
+                  <div
+                    style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)"><div><div
+                        style="font-size:13px;font-weight:600">แจ้งเตือนรายงานล่าช้า</div><div
+                        style="font-size:11px;color:var(--text2)">ส่งอีเมลเมื่อนักศึกษาไม่ส่งรายงานตามเวลา</div></div><div
+                      style="width:44px;height:24px;background:var(--indigo);border-radius:12px;position:relative;cursor:pointer;transition:.2s"
+                      onclick="this.style.background=this.style.background===''||this.style.background.includes('indigo')?'var(--border)':'var(--indigo)'"><div
+                        style="position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;left:23px;transition:.2s"></div></div></div>
+                  <div
+                    style="display:flex;justify-content:space-between;align-items:center;padding:10px 0"><div><div
+                        style="font-size:13px;font-weight:600">รายงานสรุปรายเดือน</div><div
+                        style="font-size:11px;color:var(--text2)">ส่งรายงานอัตโนมัติทุกสิ้นเดือน</div></div><div
+                      style="width:44px;height:24px;background:var(--border);border-radius:12px;position:relative;cursor:pointer;transition:.2s"
+                      onclick="this.style.background=this.style.background===''||this.style.background==='var(--border)'?'var(--indigo)':'var(--border)'"><div
+                        style="position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;left:3px;transition:.2s"></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /hr-content-area -->
+      </div><!-- /app-main -->
+    </div><!-- /screen-hr -->
+
+    <!-- HR ADD INTERN MODAL -->
+    <div class="modal-overlay" id="modal-hr-add"
+      onclick="if(event.target===this)this.classList.remove('open')">
+      <div class="modal">
+        <div class="modal-head"><div class="modal-title">+
+            เพิ่มนักศึกษาฝึกงาน</div><button class="modal-close"
+            onclick="document.getElementById('modal-hr-add').classList.remove('open')">✕</button></div>
+        <div class="modal-body">
+          <div class="form-row2">
+            <div class="fg"><label class="fl2">ชื่อ-นามสกุล <span
+                  style="color:var(--rose)">*</span></label><input class="fi3"
+                id="hr-ai-name" type="text" placeholder="ชื่อ นามสกุล"></div>
+            <div class="fg"><label class="fl2">มหาวิทยาลัย</label><input
+                class="fi3" id="hr-ai-uni" type="text"
+                placeholder="มหาวิทยาลัย"></div>
+          </div>
+          <div class="form-row2">
+            <div class="fg"><label class="fl2">แผนก</label><select class="fi3"
+                id="hr-ai-dept"><option>IT /
+                  Development</option><option>Marketing</option><option>Finance</option><option>HR
+                  / Admin</option><option>Operations</option></select></div>
+            <div class="fg"><label class="fl2">ผู้ดูแล
+                (Supervisor)</label><input class="fi3" id="hr-ai-sup"
+                type="text" placeholder="ชื่อผู้ดูแล"></div>
+          </div>
+          <div class="form-row2">
+            <div class="fg"><label class="fl2">วันเริ่ม</label><input
+                class="fi3" id="hr-ai-start" type="date"></div>
+            <div class="fg"><label class="fl2">วันสิ้นสุด</label><input
+                class="fi3" id="hr-ai-end" type="date"></div>
+          </div>
+          <div class="fg"><label class="fl2">อีเมล</label><input class="fi3"
+              id="hr-ai-email" type="email"
+              placeholder="email@university.ac.th"></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-outline btn-sm"
+            onclick="document.getElementById('modal-hr-add').classList.remove('open')">ยกเลิก</button><button
+            class="btn btn-sm" onclick="addHRIntern()"
+            style="background:var(--indigo);color:#fff">✅
+            บันทึกข้อมูล</button></div>
+      </div>
+    </div>
+
+    <!-- MODAL: ADD INTERN -->
+    <div class="modal-overlay" id="modal-add-intern"
+      onclick="closeModal('modal-add-intern',event)">
+      <div class="modal">
+        <div class="modal-head"><div class="modal-title">+
+            เพิ่มนักศึกษา</div><button class="modal-close"
+            onclick="closeModalById('modal-add-intern')">✕</button></div>
+        <div class="modal-body">
+          <div class="form-row2"><div class="fg"><label class="fl2">ชื่อ-นามสกุล
+                <span>*</span></label><input class="fi3" id="ai-name"
+                type="text" placeholder="ชื่อ นามสกุล"></div><div
+              class="fg"><label class="fl2">มหาวิทยาลัย</label><input
+                class="fi3" id="ai-uni" type="text"
+                placeholder="มหาวิทยาลัย"></div></div>
+          <div class="form-row2"><div class="fg"><label
+                class="fl2">แผนก</label><select class="fi3"
+                id="ai-dept"><option>IT /
+                  Development</option><option>Marketing</option><option>Finance</option><option>HR
+                  / Admin</option><option>Operations</option></select></div><div
+              class="fg"><label class="fl2">อีเมล</label><input class="fi3"
+                id="ai-email" type="email"
+                placeholder="email@uni.ac.th"></div></div>
+          <div class="form-row2"><div class="fg"><label
+                class="fl2">วันเริ่ม</label><input class="fi3" id="ai-start"
+                type="date"></div><div class="fg"><label
+                class="fl2">วันสิ้นสุด</label><input class="fi3" id="ai-end"
+                type="date"></div></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-outline btn-sm"
+            onclick="closeModalById('modal-add-intern')">ยกเลิก</button><button
+            class="btn btn-blue" onclick="addInternConfirm()">✅
+            บันทึก</button></div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <script data-cfasync="false">
+// ═══════════════════════════════════════════
+//  1. ตั้งค่า SUPABASE & STATE
+// ═══════════════════════════════════════════
+const supabaseUrl = 'https://tqxiqzjcixmgnsnklhnh.supabase.co';
+const supabaseKey = 'sb_publishable_pciWxrBuNenHo4Dq3fTZ6g_b9NwNk2a';
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+let currentUser = JSON.parse(localStorage.getItem('it_user') || 'null');
+let currentRole = localStorage.getItem('it_role') || 'student';
+let diaries = [];
+let attendances = [];
+let evaluations = []; 
+let interns = [];
+
+let selectedMood = '🙂';
+let currentPanel = '';
+let clockInterval, sessionStart = null;
+let checkedIn = false;
+let todayInTime = null;
+let selectedReviewDiary = null;
+
+// ═══════════════════════════════════════════
+//  2. ระบบเปลี่ยนหน้า (Navigation)
+// ═══════════════════════════════════════════
+function goScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById('screen-' + name);
+    if (target) target.classList.add('active');
+}
+function goLogin() { goScreen('login'); }
+function goLoginAs(role) {
+    const roleSelect = document.getElementById('l-role');
+    if(roleSelect) roleSelect.value = role;
+    goScreen('login');
+}
+function quickLogin(role) {
+    const roleSelect = document.getElementById('l-role');
+    if(roleSelect) roleSelect.value = role;
+    const emails = { student: 'student@test.com', teacher: 'teacher@test.com', hr: 'hr@test.com' };
+    const emailField = document.getElementById('l-email');
+    const pwField = document.getElementById('l-pw');
+    if(emailField) emailField.value = emails[role];
+    if(pwField) pwField.value = '123456';
+    goScreen('login');
+}
+
+// ═══════════════════════════════════════════
+//  3. ระบบ LOGIN / AUTH
+// ═══════════════════════════════════════════
+function switchLoginTab(tab) {
+    document.getElementById('lt-login').classList.toggle('active', tab==='login');
+    document.getElementById('lt-reg').classList.toggle('active', tab==='register');
+    document.getElementById('form-login').style.display = tab==='login' ? '' : 'none';
+    document.getElementById('form-register').style.display = tab==='register' ? '' : 'none';
+}
+function togglePw(id, btn) {
+    const inp = document.getElementById(id);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+async function doLogin() {
+    const email = document.getElementById('l-email').value.trim();
+    const pw = document.getElementById('l-pw').value;
+    const role = document.getElementById('l-role').value; // ดึงบทบาทที่เลือก
+    const errBox = document.getElementById('login-err');
+
+    console.log("Attempting login with:", email, pw); // ลองเช็คดูว่าค่ามาไหม
+    
+    if (!email || !pw) return;
+
+    // 1. ล็อกอินผ่าน Supabase
+    const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({ email, password: pw });
+
+    if (authError) {
+        if(errBox) { errBox.textContent = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'; errBox.style.display = 'block'; }
+        return;
+    }
+
+    // 2. ดึงข้อมูล Profile เพิ่มเติม (ถ้ามีตาราง profiles)
+    const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', authData.user.id).single();
+
+    // 3. เก็บข้อมูลลง LocalStorage เพื่อให้ระบบจำได้
+    currentUser = {
+        id: authData.user.id,
+        email: authData.user.email,
+        name: profile?.full_name || authData.user.user_metadata.full_name || 'ผู้ใช้',
+    };
+    currentRole = role;
+
+    localStorage.setItem('it_user', JSON.stringify(currentUser));
+    localStorage.setItem('it_role', currentRole);
+
+    // 4. ไปที่หน้า App ตามบทบาท
+    if (currentRole === 'hr') {
+        launchHR();
+    } else {
+        launchApp(); // ฟังก์ชันสำหรับเปิดหน้า Student/Teacher
+    }
+}
+async function doLogout() {
+    await supabaseClient.auth.signOut();
+    localStorage.removeItem('it_user'); 
+    localStorage.removeItem('it_role');
+    currentUser = null; currentRole = 'student';
+    goScreen('landing');
+}
+
+async function loadStudentData() {
+    if (!currentUser) return;
+    const { data: dData } = await supabaseClient.from('diaries').select('*').eq('student_id', currentUser.id).order('date', {ascending: false});
+    if (dData) {
+        diaries = dData.map(d => ({
+            id: d.id, date: d.date, title: d.title, work: d.work_detail, learn: d.learning_detail, mood: d.mood, hrs: d.hours_worked, status: d.status, comment: d.comment, commenter: d.commenter_name
+        }));
+    }
+    const { data: aData } = await supabaseClient.from('attendance').select('*').eq('student_id', currentUser.id).order('date', {ascending: false});
+    if (aData) {
+        attendances = aData.map(a => ({
+            date: a.date, inTime: a.check_in, outTime: a.check_out, hours: a.total_hours, late: a.is_late, note: a.note
+        }));
+    }
+    if(typeof renderStudentDash === 'function') renderStudentDash();
+    if(typeof renderDiaryPanel === 'function') renderDiaryPanel();
+    if(typeof renderAttPanel === 'function') renderAttPanel();
+}
+
+function updateUserUI() {
+  const u = currentUser || {name:'ผู้ใช้', role:'student'};
+  const ava = u.name ? u.name[0] : '?';
+  document.getElementById('sb-ava').textContent = ava;
+  document.getElementById('sb-uname').textContent = u.name;
+  document.getElementById('sb-urole').textContent = currentRole==='teacher' ? 'อาจารย์ที่ปรึกษา' : 'นักศึกษา';
+  const badge = document.getElementById('sb-badge');
+  if(currentRole==='teacher') {
+    badge.className='sb-role-badge rb-t'; badge.textContent='👨‍🏫 อาจารย์ที่ปรึกษา';
+    document.getElementById('sb-ava').className='sb-ava ava-b';
+  } else {
+    badge.className='sb-role-badge rb-s'; badge.textContent='🎒 นักศึกษา';
+    document.getElementById('sb-ava').className='sb-ava ava-t';
+  }
+  if(document.getElementById('s-welcome-msg')) {
+    document.getElementById('s-welcome-msg').textContent = `สวัสดี ${u.name}! ดูภาพรวมการฝึกงานของคุณ`;
+  }
+}
+
+function buildSidebar() {
+  const nav = document.getElementById('sb-nav');
+  if(currentRole==='student') {
+    nav.innerHTML = `
+      <div class="sb-sec"><div class="sb-sec-lbl">นักศึกษา</div>
+        <button class="sb-item" onclick="switchPanel('s-dash')"><span class="sb-icon">🏠</span>Dashboard</button>
+        <button class="sb-item" onclick="switchPanel('s-diary')"><span class="sb-icon">📝</span>บันทึกประจำวัน</button>
+        <button class="sb-item" onclick="switchPanel('s-att')"><span class="sb-icon">⏰</span>เวลาเข้า-ออกงาน</button>
+        <button class="sb-item" onclick="switchPanel('s-eval')"><span class="sb-icon">⭐</span>ผลการประเมิน</button>
+      </div>
+      <div class="sb-sec"><div class="sb-sec-lbl">บัญชี</div>
+        <button class="sb-item" onclick="switchPanel('s-profile')"><span class="sb-icon">👤</span>ข้อมูลส่วนตัว</button>
+      </div>`;
+  } else {
+    nav.innerHTML = `
+      <div class="sb-sec"><div class="sb-sec-lbl">ภาพรวม</div>
+        <button class="sb-item" onclick="switchPanel('t-dash')"><span class="sb-icon">🏠</span>Dashboard</button>
+        <button class="sb-item" onclick="switchPanel('t-interns')"><span class="sb-icon">👥</span>รายชื่อนักศึกษา <span class="sb-bdg">${interns.length}</span></button>
+      </div>
+      <div class="sb-sec"><div class="sb-sec-lbl">ติดตาม</div>
+        <button class="sb-item" onclick="switchPanel('t-review')"><span class="sb-icon">📝</span>ตรวจบันทึก <span class="sb-bdg w">${diaries.filter(d=>d.status==='pending').length||''}</span></button>
+        <button class="sb-item" onclick="switchPanel('t-att')"><span class="sb-icon">⏰</span>เวลาเข้างาน</button>
+      </div>
+      <div class="sb-sec"><div class="sb-sec-lbl">ประเมิน</div>
+        <button class="sb-item" onclick="switchPanel('t-eval')"><span class="sb-icon">⭐</span>ประเมินผล</button>
+        <button class="sb-item" onclick="switchPanel('t-reports')"><span class="sb-icon">📄</span>รายงาน</button>
+      </div>`;
+  }
+}
+
+function switchPanel(id) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  const panel = document.getElementById('panel-'+id);
+  if(panel) panel.classList.add('active');
+  currentPanel = id;
+
+  // Sidebar active
+  document.querySelectorAll('.sb-item').forEach(btn=>{
+    btn.classList.remove('active','t-active');
+    if(btn.getAttribute('onclick')&&btn.getAttribute('onclick').includes("'"+id+"'")) {
+      btn.classList.add(currentRole==='teacher' ? 't-active' : 'active');
+    }
+  });
+
+  // Title
+  const titles = {'s-dash':'Dashboard','s-diary':'บันทึกประจำวัน','s-att':'เวลาเข้า-ออกงาน','s-eval':'ผลการประเมิน','s-profile':'ข้อมูลส่วนตัว','t-dash':'Dashboard อาจารย์','t-interns':'รายชื่อนักศึกษา','t-review':'ตรวจบันทึกประจำวัน','t-att':'ติดตามเวลาเข้างาน','t-eval':'ประเมินผล','t-reports':'รายงานสรุป'};
+  document.getElementById('tb-title').textContent = titles[id]||id;
+
+  // Topbar action
+  const actionBtn = document.getElementById('tb-action-btn');
+  if(id==='s-diary') { actionBtn.textContent='+ บันทึกวันนี้'; actionBtn.style.display=''; }
+  else if(id==='t-interns') { actionBtn.textContent='+ เพิ่มนักศึกษา'; actionBtn.style.display=''; }
+  else { actionBtn.style.display='none'; }
+
+  // Render per panel
+  const renders = {'s-dash':renderStudentDash,'s-diary':renderDiaryPanel,'s-att':renderAttPanel,'s-eval':renderStudentEval,'t-dash':renderTeacherDash,'t-interns':renderInternList,'t-review':renderReviewPanel,'t-att':renderTeacherAtt,'t-eval':renderEvalPanel,'t-reports':renderReports,'s-profile':loadProfile};
+  if(renders[id]) renders[id]();
+}
+
+function tbAction() {
+  if(currentPanel==='s-diary') { document.getElementById('d-title').focus(); showToast('📝 กรอกบันทึกในแบบฟอร์มด้านซ้าย'); }
+  else if(currentPanel==='t-interns') openAddInternModal();
+}
+function handleSearch() {}
+
+// ═══════════════════════════════════════════
+//  CLOCK
+// ═══════════════════════════════════════════
+function startClock() {
+  clearInterval(clockInterval);
+  clockInterval = setInterval(updateClocks, 1000);
+  updateClocks();
+  checkTodayAttendance();
+}
+function updateClocks() {
+  const now = new Date();
+  const ts = now.toTimeString().split(' ')[0];
+  const ds = now.toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  ['d-clock','cw-clock'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=ts; });
+  ['d-date-lbl','cw-date-lbl'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=ds; });
+  if(checkedIn && sessionStart) {
+    const elapsed = Math.floor((Date.now()-sessionStart)/1000);
+    const h = Math.floor(elapsed/3600), m = Math.floor((elapsed%3600)/60), s = elapsed%60;
+    const hStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    const el = document.getElementById('att-sess'); if(el) el.textContent = '⏱ '+hStr;
+    const we = document.getElementById('d-worked'); if(we) we.textContent = h+'ชม. '+m+'น.';
+  }
+}
+function checkTodayAttendance() {
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayAtt = attendances.find(a=>a.date===todayStr);
+  if(todayAtt) {
+    ['d-in-t','dash-in-t'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=todayAtt.inTime; });
+    if(todayAtt.outTime) {
+      ['d-out-t','dash-out-t'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=todayAtt.outTime; });
+      setCheckoutState(true);
+    } else {
+      checkedIn=true; sessionStart = Date.now();
+      setCheckinState(false);
+    }
+  }
+}
+function setCheckinState(justIn) {
+  ['d-ci-btn','att-ci-btn'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
+  ['d-co-btn','att-co-btn'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display=''; });
+}
+function setCheckoutState(done) {
+  ['d-ci-btn','att-ci-btn'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
+  ['d-co-btn','att-co-btn'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
+  const el2=document.getElementById('att-sess'); if(el2) el2.textContent='✅ เช็คเอาท์แล้ว';
+}
+
+// ═══════════════════════════════════════════
+//  ATTENDANCE
+// ═══════════════════════════════════════════
+function checkIn() {
+  if(checkedIn) { showToast('คุณเช็คอินแล้ว!'); return; }
+  const now = new Date();
+  const todayStr = now.toISOString().split('T')[0];
+  if(attendances.find(a=>a.date===todayStr)) { showToast('เช็คอินแล้ววันนี้!'); return; }
+  const timeStr = now.toTimeString().substring(0,5);
+  const late = now.getHours()>=9;
+  attendances.unshift({ date:todayStr, inTime:timeStr, outTime:null, hours:null, late, note:'' });
+  localStorage.setItem('it_att', JSON.stringify(attendances));
+  checkedIn=true; sessionStart=Date.now(); todayInTime=timeStr;
+  ['d-in-t'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=timeStr; });
+  setCheckinState(true);
+  showToast(`🟢 เช็คอินสำเร็จ! เวลา ${timeStr} ${late?'⚠ มาสาย':''}`);
+  if(currentPanel==='s-att') renderAttPanel();
+}
+function checkOut() {
+  const now = new Date();
+  const todayStr = now.toISOString().split('T')[0];
+  const idx = attendances.findIndex(a=>a.date===todayStr);
+  if(idx<0) { showToast('ยังไม่ได้เช็คอิน!','err'); return; }
+  const timeStr = now.toTimeString().substring(0,5);
+  const inParts = attendances[idx].inTime.split(':');
+  const outParts = timeStr.split(':');
+  const hrs = ((parseInt(outParts[0])*60+parseInt(outParts[1]))-(parseInt(inParts[0])*60+parseInt(inParts[1])))/60;
+  attendances[idx].outTime = timeStr;
+  attendances[idx].hours = hrs.toFixed(1);
+  localStorage.setItem('it_att', JSON.stringify(attendances));
+  checkedIn=false; sessionStart=null;
+  ['d-out-t'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=timeStr; });
+  ['d-worked'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=hrs.toFixed(1)+' ชม.'; });
+  setCheckoutState(true);
+  showToast(`🔴 เช็คเอาท์สำเร็จ! ${hrs.toFixed(1)} ชั่วโมงวันนี้`);
+  if(currentPanel==='s-att') renderAttPanel();
+  if(currentPanel==='s-dash') renderStudentDash();
+}
+function addManualEntry() {
+  const d=document.getElementById('man-d').value, inT=document.getElementById('man-in').value, outT=document.getElementById('man-out').value, note=document.getElementById('man-note').value;
+  if(!d||!inT||!outT) { showToast('กรุณากรอกข้อมูลให้ครบ','err'); return; }
+  const inP=inT.split(':'), outP=outT.split(':');
+  const hrs=((parseInt(outP[0])*60+parseInt(outP[1]))-(parseInt(inP[0])*60+parseInt(inP[1])))/60;
+  attendances = attendances.filter(a=>a.date!==d);
+  attendances.unshift({ date:d, inTime:inT, outTime:outT, hours:hrs.toFixed(1), late:parseInt(inP[0])>=9, note });
+  attendances.sort((a,b)=>b.date.localeCompare(a.date));
+  localStorage.setItem('it_att', JSON.stringify(attendances));
+  document.getElementById('man-d').value=''; document.getElementById('man-note').value='';
+  showToast('✅ บันทึกเวลาสำเร็จ!');
+  renderAttPanel();
+}
+
+// ═══════════════════════════════════════════
+//  DIARY
+// ═══════════════════════════════════════════
+function updateDiaryCount() {
+  const v=document.getElementById('d-work').value;
+  const el=document.getElementById('d-char'); if(el) el.textContent=v.length+' ตัวอักษร';
+}
+function pickMood(btn, mood) {
+  document.querySelectorAll('.mood-opt').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel'); selectedMood=mood;
+}
+function addSkill() {
+  const inp=document.getElementById('skill-inp'); const v=inp.value.trim();
+  if(!v) return;
+  const chip=document.createElement('div'); chip.className='skill-chip';
+  chip.innerHTML=v+' <span class="rm" onclick="this.parentElement.remove()">×</span>';
+  document.getElementById('skill-tags').appendChild(chip);
+  inp.value='';
+}
+function saveDraft() { showToast('💾 บันทึกร่างแล้ว'); }
+function submitDiary() {
+  const title=document.getElementById('d-title').value.trim();
+  const work=document.getElementById('d-work').value.trim();
+  if(!title||!work) { showToast('กรุณากรอกหัวข้อและรายละเอียด','err'); return; }
+  const date=document.getElementById('diary-date').value || new Date().toISOString().split('T')[0];
+  const skills=Array.from(document.querySelectorAll('#skill-tags .skill-chip')).map(c=>c.textContent.replace('×','').trim());
+  const entry={id:Date.now(),date,title,work,learn:document.getElementById('d-learn').value,prob:document.getElementById('d-prob').value,mood:selectedMood,skills,hrs:document.getElementById('d-hrs').value,diff:document.getElementById('d-diff').value,status:'pending',comment:null,commenter:null};
+  const existIdx=diaries.findIndex(d=>d.date===date);
+  if(existIdx>=0) { if(!confirm('มีบันทึกวันนี้แล้ว ต้องการแทนที่?')) return; diaries[existIdx]=entry; }
+  else diaries.unshift(entry);
+  localStorage.setItem('it_diaries', JSON.stringify(diaries));
+  showToast('✅ ส่งบันทึกสำเร็จ! อาจารย์จะตรวจสอบเร็วๆ นี้');
+  document.getElementById('d-title').value=''; document.getElementById('d-work').value='';
+  document.getElementById('d-learn').value=''; document.getElementById('d-prob').value='';
+  renderDiaryPanel();
+  if(currentPanel==='s-dash') renderStudentDash();
+}
+
+// ═══════════════════════════════════════════
+//  RENDER: STUDENT DASHBOARD
+// ═══════════════════════════════════════════
+function renderStudentDash() {
+  const totalHrs = attendances.reduce((s,a)=>s+(parseFloat(a.hours)||0),0);
+  const el1=document.getElementById('sd-diaries'); if(el1) el1.textContent=diaries.length;
+  const el2=document.getElementById('sd-hours'); if(el2) el2.textContent=Math.round(totalHrs);
+  const lastEval = evaluations.filter(e=>e.internId===0).sort((a,b)=>b.date.localeCompare(a.date))[0];
+  const el3=document.getElementById('sd-score'); if(el3) el3.textContent=lastEval ? lastEval.overall : '—';
+
+  // Recent diaries
+  const recentEl=document.getElementById('sd-recent');
+  if(recentEl) {
+    if(!diaries.length) { recentEl.innerHTML='<div style="text-align:center;padding:24px;color:var(--text3);font-size:12px">📭 ยังไม่มีบันทึก</div>'; }
+    else recentEl.innerHTML=diaries.slice(0,3).map(d=>diaryMini(d)).join('');
+  }
+
+  // Week grid
+  renderWeekGrid('s-week-grid','wk-sent','wk-left');
+}
+
+function renderWeekGrid(gridId, sentId, leftId) {
+  const grid=document.getElementById(gridId); if(!grid) return;
+  const today=new Date(); const todayStr=today.toISOString().split('T')[0];
+  const mon=new Date(today); mon.setDate(today.getDate()-((today.getDay()+6)%7));
+  const days=['จ','อ','พ','พฤ','ศ','ส','อา']; let sent=0; let cells='';
+  for(let i=0;i<7;i++) {
+    const d=new Date(mon); d.setDate(mon.getDate()+i);
+    const str=d.toISOString().split('T')[0];
+    const isToday=str===todayStr, isWE=i>=5, hasEntry=diaries.some(e=>e.date===str);
+    if(hasEntry&&!isWE) sent++;
+    const cls=isWE?'ad-off':hasEntry?'ad-ok':isToday?'ad-today':'';
+    cells+=`<div class="att-day ${cls}">${days[i]}</div>`;
+  }
+  grid.innerHTML=cells;
+  const se=document.getElementById(sentId); if(se) se.textContent=sent;
+  const le=document.getElementById(leftId); if(le) le.textContent=Math.max(0,5-sent);
+}
+
+function diaryMini(d) {
+  const statusCls=d.status==='approved'?'dcc-ok':d.status==='commented'?'dcc-c':'dcc-p';
+  const statusTxt=d.status==='approved'?'อนุมัติ':d.status==='commented'?'มี comment':'รอตรวจ';
+  const borderCls=d.status==='approved'?'dc-ok':d.status==='commented'?'dc-cmt':'dc-pend';
+  return `<div class="diary-card ${borderCls}">
+    <div class="dc-top"><span>${d.mood}</span><span class="dc-date">${d.date}</span><span class="dc-chip ${statusCls}">${statusTxt}</span></div>
+    <div class="dc-title">${d.title}</div>
+    <div class="dc-preview">${d.work}</div>
+    ${d.skills&&d.skills.length?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:7px">${d.skills.map(s=>`<span class="skill-chip" style="font-size:10px;padding:2px 7px">${s}</span>`).join('')}</div>`:''}
+    ${d.comment?`<div class="dc-cmt-box"><div class="dc-cmt-from">💬 ${d.commenter}</div>${d.comment}</div>`:''}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════
+//  RENDER: DIARY PANEL
+// ═══════════════════════════════════════════
+function renderDiaryPanel() {
+  const todayStr=new Date().toISOString().split('T')[0];
+  const dateInp=document.getElementById('diary-date');
+  if(dateInp&&!dateInp.value) dateInp.value=todayStr;
+  updateWeekday();
+
+  const hist=document.getElementById('diary-hist'); if(!hist) return;
+  const cnt=document.getElementById('diary-cnt'); if(cnt) cnt.textContent=diaries.length+' รายการ';
+  if(!diaries.length) { hist.innerHTML='<div style="text-align:center;padding:32px;color:var(--text3);font-size:12px">📭 ยังไม่มีบันทึก</div>'; return; }
+  hist.innerHTML=diaries.map(d=>diaryMini(d)).join('');
+}
+function updateWeekday() {
+  const dateInp=document.getElementById('diary-date'); if(!dateInp) return;
+  const d=new Date(dateInp.value||new Date());
+  const days=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+  const el=document.getElementById('diary-wday'); if(el) el.textContent='วัน'+days[d.getDay()];
+}
+
+// ═══════════════════════════════════════════
+//  RENDER: ATTENDANCE PANEL
+// ═══════════════════════════════════════════
+function renderAttPanel() {
+  const totalHrs=attendances.reduce((s,a)=>s+(parseFloat(a.hours)||0),0);
+  const totalDays=attendances.filter(a=>a.outTime).length;
+  const lateDays=attendances.filter(a=>a.late).length;
+  ['att-days','td-days'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=totalDays; });
+  ['att-hrs','td-hrs'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=Math.round(totalHrs); });
+  const el3=document.getElementById('att-late'); if(el3) el3.textContent=lateDays;
+  const el4=document.getElementById('att-abs'); if(el4) el4.textContent=0;
+
+  const monHours=Math.min(Math.round(totalHrs),168);
+  const el5=document.getElementById('att-mon-h'); if(el5) el5.textContent=monHours+'/168';
+  const el6=document.getElementById('att-mon-pb'); if(el6) el6.style.width=Math.round(monHours/168*100)+'%';
+  const pct=totalDays>0?Math.round(totalDays/(totalDays+0)*100):100;
+  const el7=document.getElementById('att-pct'); if(el7) el7.textContent=pct+'%';
+  const el8=document.getElementById('att-pct-pb'); if(el8) el8.style.width=pct+'%';
+
+  // History
+  const hist=document.getElementById('att-hist'); if(!hist) return;
+  if(!attendances.length) { hist.innerHTML='<div style="text-align:center;padding:24px;color:var(--text3);font-size:12px">ยังไม่มีข้อมูล</div>'; return; }
+  hist.innerHTML=attendances.slice(0,20).map(a=>`
+    <div class="time-row">
+      <div class="t-date">${a.date}</div>
+      <div class="t-in">${a.inTime||'—'}</div>
+      <div class="t-out">${a.outTime||'—'}</div>
+      <div class="t-hrs">${a.hours?a.hours+' ชม.':'กำลังทำงาน'}</div>
+      <div>${a.late?'<span class="status s-warn">มาสาย</span>':'<span class="status s-ok">ปกติ</span>'}</div>
+      <div class="t-note">${a.note||''}</div>
+    </div>`).join('');
+
+  // Bar chart
+  renderAttBars();
+}
+
+function renderAttBars() {
+  const bars=document.getElementById('att-bars'); if(!bars) return;
+  const today=new Date(); const mon=new Date(today); mon.setDate(today.getDate()-((today.getDay()+6)%7));
+  const days=['จ','อ','พ','พฤ','ศ']; let cells='';
+  for(let i=0;i<5;i++) {
+    const d=new Date(mon); d.setDate(mon.getDate()+i);
+    const str=d.toISOString().split('T')[0];
+    const att=attendances.find(a=>a.date===str);
+    const hrs=att&&att.hours?parseFloat(att.hours):0;
+    const h=Math.round(hrs/9*100);
+    cells+=`<div class="bc"><div class="bbar" style="height:${h}%"></div><div class="blbl">${days[i]}</div></div>`;
+  }
+  bars.innerHTML=cells;
+}
+
+// ═══════════════════════════════════════════
+//  RENDER: STUDENT EVAL
+// ═══════════════════════════════════════════
+function renderStudentEval() {
+  const wrap=document.getElementById('s-eval-wrap'); if(!wrap) return;
+  const myEvals=evaluations.filter(e=>e.internId===0||e.studentEmail===(currentUser&&currentUser.email));
+  if(!myEvals.length) {
+    wrap.innerHTML='<div style="text-align:center;padding:56px;color:var(--text3)"><div style="font-size:44px;margin-bottom:14px">📋</div><div style="font-size:14px;font-weight:600;margin-bottom:6px">ยังไม่มีผลประเมิน</div><div style="font-size:12px">อาจารย์ยังไม่ได้ประเมิน</div></div>';
+    return;
+  }
+  const latest=myEvals.sort((a,b)=>b.date.localeCompare(a.date))[0];
+  const grade=latest.overall>=4.5?'A — ดีเยี่ยม 🏆':latest.overall>=4?'B+ — ดีมาก':latest.overall>=3.5?'B — ดี':latest.overall>=3?'C+ — พอใช้':'C — ผ่าน';
+  const critNames={skill:'🔧 ทักษะวิชาชีพ',responsibility:'📋 ความรับผิดชอบ',teamwork:'🤝 ทีมเวิร์ค',communication:'💬 สื่อสาร',creativity:'💡 ความคิดสร้างสรรค์',punctuality:'⏰ ตรงต่อเวลา'};
+  wrap.innerHTML=`
+    <div class="score-hero">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text2);margin-bottom:8px">คะแนนรวม</div>
+      <div class="score-big-num">${latest.overall}<span style="font-size:24px;color:var(--text2);font-weight:400">/5.0</span></div>
+      <div class="score-grade">เกรด ${grade}</div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-head"><div class="card-title">📊 คะแนนรายเกณฑ์</div></div>
+        <div class="card-body">
+          ${Object.entries(latest.criteria||{}).map(([k,v])=>`
+            <div style="margin-bottom:12px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+                <span style="font-size:12px">${critNames[k]||k}</span>
+                <span style="font-size:12px;font-weight:700;color:${v>=4.5?'var(--emerald)':v>=4?'var(--teal)':'var(--amber)'}">${v}/5</span>
+              </div>
+              <div class="pb" style="height:6px"><div class="pf pf-t" style="width:${v/5*100}%"></div></div>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">💬 Feedback จากอาจารย์</div></div>
+        <div class="card-body">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px;background:rgba(59,130,246,.06);border-radius:9px;border:1px solid rgba(59,130,246,.15)">
+            <div class="ava-sm ava-b" style="width:36px;height:36px;font-size:13px">อ</div>
+            <div><div style="font-weight:700;font-size:13px">${latest.teacherName||'อาจารย์'}</div><div style="font-size:11px;color:var(--text2)">${latest.round||''} · ${latest.date}</div></div>
+          </div>
+          <div style="font-size:13px;line-height:1.8;color:var(--text2)">${latest.comment||'ไม่มีความคิดเห็น'}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════
+//  RENDER: TEACHER DASHBOARD
+// ═══════════════════════════════════════════
+function renderTeacherDash() {
+  const total=interns.length;
+  const pending=interns.filter(i=>i.status==='pending').length;
+  const dEl=document.getElementById('td-total'); if(dEl) dEl.textContent=total;
+  const pEl=document.getElementById('td-eval'); if(pEl) pEl.textContent=pending;
+  const mEl=document.getElementById('td-miss'); if(mEl) mEl.textContent=interns.filter(i=>i.progress<40).length;
+  const oEl=document.getElementById('td-ok'); if(oEl) oEl.textContent=interns.filter(i=>i.progress>=60).length;
+
+  const tbl=document.getElementById('td-intern-tbl'); if(!tbl) return;
+  tbl.innerHTML=interns.slice(0,5).map(i=>`<tr>
+    <td><div class="nm"><div class="ava-sm ${i.color}">${i.name[0]}</div><div><div class="nm-main">${i.name}</div><div class="nm-sub">${i.uni}</div></div></div></td>
+    <td><div class="pw"><div class="pb"><div class="pf ${i.progress>=60?'pf-t':i.progress>=40?'pf-a':'pf-r'}" style="width:${i.progress}%"></div></div><div class="pt">${i.progress}%</div></div></td>
+    <td>${statusBadge(i.status)}</td>
+    <td><button class="btn btn-sm btn-outline" onclick="goEvalIntern(${i.id})">ประเมิน</button></td>
+  </tr>`).join('');
+
+  const pend=document.getElementById('td-pending'); if(!pend) return;
+  const pendDiaries=diaries.filter(d=>d.status==='pending');
+  if(!pendDiaries.length) { pend.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3)">ไม่มีบันทึกรอตรวจ ✅</td></tr>'; return; }
+  pend.innerHTML=pendDiaries.map((d,i)=>`<tr>
+    <td><div class="nm"><div class="ava-sm ${['c1','c2','c3','c4','c5','c6'][i%6]}">${'สวกธอพ'[i%6]}</div><div class="nm-main">${interns[i%interns.length]?.name||'นักศึกษา'}</div></div></td>
+    <td>${d.date}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.title}</td>
+    <td>${d.mood}</td><td><span class="status s-warn">รอตรวจ</span></td>
+    <td><button class="btn btn-sm btn-outline" onclick="switchPanel('t-review')">ตรวจ</button></td>
+  </tr>`).join('');
+}
+
+function statusBadge(s) {
+  const map={active:'<span class="status s-ok">กำลังฝึกงาน</span>',pending:'<span class="status s-warn">ต้องติดตาม</span>',done:'<span class="status s-done">เสร็จสิ้น</span>'};
+  return map[s]||s;
+}
+
+// ═══════════════════════════════════════════
+//  RENDER: INTERN LIST
+// ═══════════════════════════════════════════
+function renderInternList(filter='all') {
+  const tbl=document.getElementById('t-intern-list'); if(!tbl) return;
+  const filtered=filter==='all'?interns:interns.filter(i=>i.status===filter);
+  tbl.innerHTML=filtered.map(i=>`<tr>
+    <td><div class="nm"><div class="ava-sm ${i.color}">${i.name[0]}</div><div><div class="nm-main">${i.name}</div><div class="nm-sub">${i.email||''}</div></div></div></td>
+    <td>${i.uni}</td><td>${i.dept}</td>
+    <td><div class="pw"><div class="pb"><div class="pf ${i.progress>=60?'pf-t':i.progress>=40?'pf-a':'pf-r'}" style="width:${i.progress}%"></div></div><div class="pt">${i.progress}%</div></div></td>
+    <td>${statusBadge(i.status)}</td>
+    <td><div style="display:flex;gap:6px">
+      <button class="btn btn-sm btn-outline" onclick="goEvalIntern(${i.id})">⭐ ประเมิน</button>
+      <button class="btn btn-sm btn-danger" onclick="removeIntern(${i.id})">✕</button>
+    </div></td>
+  </tr>`).join('');
+}
+function filterInterns(btn, filter) {
+  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('fa'));
+  btn.classList.add('fa');
+  renderInternList(filter);
+}
+function goEvalIntern(id) {
+  switchPanel('t-eval');
+  const sel=document.getElementById('eval-intern-sel'); if(sel) { sel.value=id; loadEvalForm(); }
+}
+function removeIntern(id) {
+  if(!confirm('ลบนักศึกษาออกจากรายการ?')) return;
+  interns=interns.filter(i=>i.id!==id);
+  localStorage.setItem('it_interns',JSON.stringify(interns));
+  renderInternList(); showToast('ลบเรียบร้อย');
+}
+function openAddInternModal() { document.getElementById('modal-add-intern').classList.add('open'); }
+function addInternConfirm() {
+  const name=document.getElementById('ai-name').value.trim();
+  if(!name) { showToast('กรุณากรอกชื่อ','err'); return; }
+  const colors=['c1','c2','c3','c4','c5','c6'];
+  const newIntern={id:Date.now(),name,uni:document.getElementById('ai-uni').value||'—',dept:document.getElementById('ai-dept').value,email:document.getElementById('ai-email').value,start:document.getElementById('ai-start').value,end:document.getElementById('ai-end').value,progress:0,status:'active',color:colors[interns.length%6]};
+  interns.push(newIntern);
+  localStorage.setItem('it_interns',JSON.stringify(interns));
+  closeModalById('modal-add-intern');
+  renderInternList(); populateTeacherSelects(); renderTeacherDash();
+  showToast('✅ เพิ่มนักศึกษาเรียบร้อย!');
+}
+
+// ═══════════════════════════════════════════
+//  RENDER: REVIEW DIARIES
+// ═══════════════════════════════════════════
+function renderReviewPanel() {
+  populateReviewSelect();
+  loadReviewDiaries();
+}
+function populateReviewSelect() {
+  const sel=document.getElementById('review-intern-sel'); if(!sel) return;
+  sel.innerHTML='<option value="all">— นักศึกษาทั้งหมด —</option>'+interns.map(i=>`<option value="${i.id}">${i.name}</option>`).join('');
+}
+function loadReviewDiaries() {
+  const list=document.getElementById('review-list'); if(!list) return;
+  if(!diaries.length) { list.innerHTML='<div style="text-align:center;padding:32px;color:var(--text3);font-size:12px">ไม่มีบันทึกที่รอตรวจ</div>'; return; }
+  list.innerHTML=diaries.map(d=>{
+    const bc=d.status==='approved'?'dc-ok':d.status==='commented'?'dc-cmt':'dc-pend';
+    const chip=d.status==='approved'?'<span class="dc-chip dcc-ok">อนุมัติ</span>':d.status==='commented'?'<span class="dc-chip dcc-c">commented</span>':'<span class="dc-chip dcc-p">รอตรวจ</span>';
+    return `<div class="diary-card ${bc}" onclick="showReviewDetail(${d.id})">
+      <div class="dc-top"><span>${d.mood}</span><span class="dc-date">${d.date}</span>${chip}</div>
+      <div class="dc-title">${d.title}</div>
+      <div class="dc-preview">${d.work}</div>
+    </div>`;
+  }).join('');
+}
+function showReviewDetail(id) {
+  const d=diaries.find(x=>x.id===id); if(!d) return;
+  selectedReviewDiary=d;
+  document.getElementById('review-placeholder').style.display='none';
+  const card=document.getElementById('review-detail-card'); card.style.display='';
+  const body=document.getElementById('review-detail-body');
+  body.innerHTML=`
+    <div style="margin-bottom:14px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">วันที่ ${d.date} ${d.mood}</div>
+    <div style="font-size:15px;font-weight:800;margin-bottom:8px">${d.title}</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px">${d.work}</div>
+    ${d.learn?`<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:4px">สิ่งที่เรียนรู้</div><div style="font-size:12px;color:var(--text2)">${d.learn}</div></div>`:''}
+    ${d.skills&&d.skills.length?`<div class="skill-tags" style="margin-bottom:12px">${d.skills.map(s=>`<span class="skill-chip">${s}</span>`).join('')}</div>`:''}
+    <div style="display:flex;gap:10px;font-size:11px;color:var(--text3)"><span>⏰ ${d.hrs} ชั่วโมง</span><span>📊 ${d.diff}</span></div></div>
+    ${d.comment?`<div class="dc-cmt-box" style="margin-bottom:14px"><div class="dc-cmt-from">💬 ${d.commenter}</div>${d.comment}</div>`:''}
+    <div style="border-top:1px solid var(--border);padding-top:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">เพิ่ม Comment / Feedback</div>
+      <textarea class="fi3" id="review-cmt-input" rows="3" placeholder="ระบุความคิดเห็น คำแนะนำ..." style="margin-bottom:10px">${d.comment||''}</textarea>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-success btn-sm" onclick="approveOneDiary(${d.id})">✅ อนุมัติ</button>
+        <button class="btn btn-blue btn-sm" onclick="commentDiary(${d.id})">💬 บันทึก Comment</button>
+      </div>
+    </div>`;
+}
+function approveOneDiary(id) {
+  const idx=diaries.findIndex(d=>d.id===id); if(idx<0) return;
+  diaries[idx].status='approved';
+  localStorage.setItem('it_diaries',JSON.stringify(diaries));
+  loadReviewDiaries(); showReviewDetail(id); showToast('✅ อนุมัติบันทึกแล้ว!');
+}
+function commentDiary(id) {
+  const cmt=document.getElementById('review-cmt-input').value.trim();
+  if(!cmt) { showToast('กรุณากรอก comment','err'); return; }
+  const idx=diaries.findIndex(d=>d.id===id); if(idx<0) return;
+  diaries[idx].comment=cmt; diaries[idx].status='commented';
+  diaries[idx].commenter=(currentUser&&currentUser.name)||'อาจารย์';
+  localStorage.setItem('it_diaries',JSON.stringify(diaries));
+  loadReviewDiaries(); showReviewDetail(id); showToast('💬 บันทึก comment สำเร็จ!');
+}
+function approveAllDiaries() {
+  diaries.forEach(d=>{ if(d.status==='pending') d.status='approved'; });
+  localStorage.setItem('it_diaries',JSON.stringify(diaries));
+  loadReviewDiaries(); showToast('✅ อนุมัติทั้งหมดแล้ว!');
+}
+function notifyAll() { showToast('📧 ส่งแจ้งเตือนนักศึกษาทุกคนแล้ว'); }
+
+// ═══════════════════════════════════════════
+//  RENDER: TEACHER ATTENDANCE
+// ═══════════════════════════════════════════
+function renderTeacherAtt() {
+  const tbl=document.getElementById('t-att-tbl'); if(!tbl) return;
+  tbl.innerHTML=interns.map((i,idx)=>{
+    const days=8+idx; const hrs=days*7.5; const late=idx===2?2:0; const pct=Math.round(days/20*100);
+    return `<tr>
+      <td><div class="nm"><div class="ava-sm ${i.color}">${i.name[0]}</div><div class="nm-main">${i.name}</div></div></td>
+      <td>${days}</td><td>${hrs.toFixed(0)}</td><td>${late}</td><td>0</td>
+      <td><div class="pw"><div class="pb" style="width:80px"><div class="pf ${pct>=80?'pf-t':pct>=60?'pf-a':'pf-r'}" style="width:${pct}%"></div></div><span style="font-size:11px;color:var(--text2)">${pct}%</span></div></td>
+      <td>${pct>=80?'<span class="status s-ok">ปกติ</span>':pct>=60?'<span class="status s-warn">ต้องติดตาม</span>':'<span class="status s-bad">ขาดงานมาก</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+//  RENDER: EVAL FORM
+// ═══════════════════════════════════════════
+const CRITERIA=[
+  {key:'skill',icon:'🔧',label:'ทักษะวิชาชีพ'},
+  {key:'responsibility',icon:'📋',label:'ความรับผิดชอบ'},
+  {key:'teamwork',icon:'🤝',label:'ทีมเวิร์ค'},
+  {key:'communication',icon:'💬',label:'การสื่อสาร'},
+  {key:'creativity',icon:'💡',label:'ความคิดสร้างสรรค์'},
+  {key:'punctuality',icon:'⏰',label:'ตรงต่อเวลา'},
+];
+let evalRatings={};
+
+function populateTeacherSelects() {
+  ['eval-intern-sel','review-intern-sel'].forEach(id=>{
+    const sel=document.getElementById(id); if(!sel) return;
+    const isReview=id==='review-intern-sel';
+    sel.innerHTML=(isReview?'<option value="all">— ทั้งหมด —</option>':'')+interns.map(i=>`<option value="${i.id}">${i.name}</option>`).join('');
+  });
+}
+function renderEvalPanel() {
+  populateTeacherSelects();
+  const grid=document.getElementById('eval-criteria-grid'); if(!grid) return;
+  grid.innerHTML=CRITERIA.map(c=>`
+    <div class="eval-item">
+      <div class="eval-lbl">${c.icon} ${c.label}</div>
+      <div class="star-grp" id="stars-${c.key}">
+        ${[1,2,3,4,5].map(n=>`<button class="star-btn" data-val="${n}" onclick="setStar('${c.key}',${n})">★</button>`).join('')}
+        <span style="font-size:11px;color:var(--text2);margin-left:4px" id="sv-${c.key}">—</span>
+      </div>
+    </div>`).join('');
+
+  renderEvalHistory();
+  loadEvalForm();
+}
+function setStar(key, val) {
+  evalRatings[key]=val;
+  document.querySelectorAll(`#stars-${key} .star-btn`).forEach(b=>{ b.classList.toggle('on',parseInt(b.dataset.val)<=val); });
+  document.getElementById('sv-'+key).textContent=val+'/5';
+  const avg=Object.values(evalRatings).length?Object.values(evalRatings).reduce((s,v)=>s+v,0)/Object.values(evalRatings).length:0;
+  document.getElementById('eval-overall').value=avg.toFixed(1);
+  document.getElementById('eval-overall-val').textContent=avg.toFixed(1);
+}
+function loadEvalForm() {
+  const sel=document.getElementById('eval-intern-sel'); if(!sel||!sel.value) return;
+  const intern=interns.find(i=>i.id==sel.value);
+  const info=document.getElementById('eval-intern-info'); if(!info) return;
+  if(intern) {
+    info.style.display='flex';
+    document.getElementById('ei-ava').textContent=intern.name[0];
+    document.getElementById('ei-ava').className='ipb-ava '+intern.color;
+    document.getElementById('ei-name').textContent=intern.name;
+    document.getElementById('ei-meta').innerHTML=`<span class="tag tag-b">${intern.uni}</span> &nbsp; <span class="tag tag-t">${intern.dept}</span>`;
+    const prevEvals=evaluations.filter(e=>e.internId==intern.id);
+    const prev=document.getElementById('ei-prev-score');
+    if(prev) prev.innerHTML=prevEvals.length?`<div style="font-size:10px;color:var(--text2)">ประเมินแล้ว ${prevEvals.length} ครั้ง</div><div style="font-family:'Kanit';font-size:20px;font-weight:800;color:var(--teal)">${prevEvals[prevEvals.length-1].overall}</div>`:'<div style="font-size:11px;color:var(--text3)">ยังไม่มีประวัติ</div>';
+  }
+}
+function renderEvalHistory() {
+  const hist=document.getElementById('eval-history'); if(!hist) return;
+  if(!evaluations.length) { hist.innerHTML='<div style="text-align:center;padding:32px;color:var(--text3);font-size:12px">ยังไม่มีประวัติการประเมิน</div>'; return; }
+  hist.innerHTML=evaluations.sort((a,b)=>b.date.localeCompare(a.date)).map(e=>{
+    const intern=interns.find(i=>i.id==e.internId);
+    return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div class="ava-sm ${intern?intern.color:'c1'}">${intern?intern.name[0]:'?'}</div>
+        <div><div style="font-weight:700;font-size:12px">${intern?intern.name:'นักศึกษา'}</div><div style="font-size:10px;color:var(--text2)">${e.round||''} · ${e.date}</div></div>
+        <div style="margin-left:auto;font-family:'Kanit';font-size:20px;font-weight:900;color:var(--teal)">${e.overall}</div>
+      </div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.6">${e.comment||''}</div>
+    </div>`;
+  }).join('');
+}
+function saveDraftEval() { showToast('💾 บันทึกร่างการประเมินแล้ว'); }
+function submitEval() {
+  const comment=document.getElementById('eval-comment').value.trim();
+  const overall=parseFloat(document.getElementById('eval-overall').value);
+  const sel=document.getElementById('eval-intern-sel');
+  if(!comment) { showToast('กรุณากรอก feedback','err'); return; }
+  if(!sel.value) { showToast('กรุณาเลือกนักศึกษา','err'); return; }
+  const newEval={id:Date.now(),internId:parseInt(sel.value)||sel.value,overall:overall.toFixed(1),criteria:{...evalRatings},comment,round:document.getElementById('eval-round').value,date:new Date().toISOString().split('T')[0],teacherName:(currentUser&&currentUser.name)||'อาจารย์'};
+  evaluations.push(newEval);
+  localStorage.setItem('it_evals',JSON.stringify(evaluations));
+  document.getElementById('eval-comment').value='';
+  evalRatings={};
+  CRITERIA.forEach(c=>{ document.querySelectorAll(`#stars-${c.key} .star-btn`).forEach(b=>b.classList.remove('on')); document.getElementById('sv-'+c.key).textContent='—'; });
+  renderEvalHistory(); showToast('✅ ส่งผลการประเมินสำเร็จ! นักศึกษาจะได้รับแจ้ง');
+}
+
+// ═══════════════════════════════════════════
+//  RENDER: REPORTS
+// ═══════════════════════════════════════════
+function renderReports() {
+  const tbl=document.getElementById('t-report-tbl'); if(!tbl) return;
+  if(!evaluations.length) {
+    tbl.innerHTML='<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text3)">ยังไม่มีข้อมูลการประเมิน</td></tr>';
+    // Add sample data
+    const sampleEvals=[
+      {internId:1,overall:'4.5',criteria:{skill:5,responsibility:4,teamwork:4,communication:4,creativity:5,punctuality:4},teacherName:'ผศ.ดร.อรรถพล',date:'2026-02-10'},
+      {internId:2,overall:'4.1',criteria:{skill:4,responsibility:4,teamwork:4,communication:4,creativity:4,punctuality:4},teacherName:'ผศ.ดร.อรรถพล',date:'2026-02-11'},
+      {internId:3,overall:'3.8',criteria:{skill:4,responsibility:3,teamwork:4,communication:4,creativity:4,punctuality:3},teacherName:'ผศ.ดร.อรรถพล',date:'2026-02-12'},
+    ];
+    tbl.innerHTML=sampleEvals.map(e=>{
+      const intern=interns.find(i=>i.id===e.internId);
+      const grade=parseFloat(e.overall)>=4.5?'A':parseFloat(e.overall)>=4?'B+':parseFloat(e.overall)>=3.5?'B':'B-';
+      return `<tr>
+        <td><div class="nm"><div class="ava-sm ${intern?intern.color:'c1'}">${intern?intern.name[0]:'?'}</div><div class="nm-main">${intern?intern.name:'?'}</div></div></td>
+        <td>${e.criteria.skill||'—'}/5</td><td>${e.criteria.responsibility||'—'}/5</td>
+        <td>${e.criteria.teamwork||'—'}/5</td><td>${e.criteria.communication||'—'}/5</td>
+        <td><span style="font-family:'Kanit';font-size:15px;font-weight:800;color:var(--teal)">${e.overall}</span></td>
+        <td><span style="font-weight:700;color:${parseFloat(e.overall)>=4.5?'var(--emerald)':'var(--amber)'}">${grade}</span></td>
+        <td style="font-size:11px;color:var(--text2)">${e.teacherName}</td>
+      </tr>`;
+    }).join('');
+    return;
+  }
+  tbl.innerHTML=evaluations.map(e=>{
+    const intern=interns.find(i=>i.id===e.internId);
+    const grade=parseFloat(e.overall)>=4.5?'A':parseFloat(e.overall)>=4?'B+':parseFloat(e.overall)>=3.5?'B':'B-';
+    return `<tr>
+      <td><div class="nm"><div class="ava-sm ${intern?intern.color:'c1'}">${intern?intern.name[0]:'?'}</div><div class="nm-main">${intern?intern.name:'?'}</div></div></td>
+      <td>${e.criteria.skill||'—'}/5</td><td>${e.criteria.responsibility||'—'}/5</td>
+      <td>${e.criteria.teamwork||'—'}/5</td><td>${e.criteria.communication||'—'}/5</td>
+      <td><span style="font-family:'Kanit';font-size:15px;font-weight:800;color:var(--teal)">${e.overall}</span></td>
+      <td><span style="font-weight:700;color:${parseFloat(e.overall)>=4.5?'var(--emerald)':'var(--amber)'}">${grade}</span></td>
+      <td style="font-size:11px;color:var(--text2)">${e.teacherName||'อาจารย์'}</td>
+    </tr>`;
+  }).join('');
+}
+function exportCSV() { showToast('📥 Export ข้อมูล CSV แล้ว'); }
+
+// ═══════════════════════════════════════════
+//  PROFILE
+// ═══════════════════════════════════════════
+function loadProfile() {
+  const saved=JSON.parse(localStorage.getItem('it_profile')||'{}');
+  ['p-name','p-sid','p-tel','p-uni','p-fac','p-major','p-comp','p-dept','p-start','p-end','p-sup'].forEach(id=>{
+    const el=document.getElementById(id); if(el&&saved[id]) el.value=saved[id];
+  });
+  const u=currentUser; if(u&&document.getElementById('p-name')&&!saved['p-name']) document.getElementById('p-name').value=u.name||'';
+}
+function saveProfile() {
+  const data={};
+  ['p-name','p-sid','p-tel','p-uni','p-fac','p-major','p-comp','p-dept','p-start','p-end','p-sup'].forEach(id=>{
+    const el=document.getElementById(id); if(el) data[id]=el.value;
+  });
+  localStorage.setItem('it_profile',JSON.stringify(data));
+  if(data['p-name']&&currentUser) { currentUser.name=data['p-name']; localStorage.setItem('it_user',JSON.stringify(currentUser)); updateUserUI(); }
+  showToast('✅ บันทึกข้อมูลสำเร็จ!');
+}
+
+// ═══════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════
+function closeModal(id, e) { if(e.target===document.getElementById(id)) closeModalById(id); }
+function closeModalById(id) { document.getElementById(id).classList.remove('open'); }
+
+// ═══════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════
+function showToast(msg, type='ok') {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(type==='err'?' err':'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+// ═══════════════════════════════════════════
+//  DIARY DATE LISTENER
+// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+//  HR / COMPANY SYSTEM
+// ═══════════════════════════════════════════
+let hrInterns = [
+  {id:1,name:'สมชาย ใจดี',uni:'จุฬาลงกรณ์มหาวิทยาลัย',dept:'IT / Development',start:'2025-11-01',end:'2026-01-31',progress:75,status:'active',supervisor:'นายอรรถพล ไชยมงคล',email:'somchai@cu.ac.th',color:'c1'},
+  {id:2,name:'นางสาววิภา สว่าง',uni:'ม.เกษตรศาสตร์',dept:'Marketing',start:'2025-11-01',end:'2026-01-31',progress:60,status:'active',supervisor:'นางสาวปิยะมาศ ทองดี',email:'wipa@ku.ac.th',color:'c2'},
+  {id:3,name:'กิตติพงษ์ ลมเย็น',uni:'ม.ธรรมศาสตร์',dept:'Finance',start:'2025-10-15',end:'2026-01-15',progress:45,status:'pending',supervisor:'นายวิชัย สุขสม',email:'kitti@tu.ac.th',color:'c3'},
+  {id:4,name:'ธนภัทร มีสุข',uni:'ม.เชียงใหม่',dept:'IT / Development',start:'2025-12-01',end:'2026-03-01',progress:30,status:'active',supervisor:'นายอรรถพล ไชยมงคล',email:'tana@cmu.ac.th',color:'c4'},
+  {id:5,name:'นางสาวพิมพ์ใจ รักษา',uni:'ม.ขอนแก่น',dept:'HR / Admin',start:'2025-11-15',end:'2026-02-15',progress:85,status:'review',supervisor:'นางสาวปรียา สดใส',email:'pim@kku.ac.th',color:'c5'},
+  {id:6,name:'ณัฐวุฒิ แก้วใส',uni:'ม.มหิดล',dept:'IT / Development',start:'2025-09-01',end:'2025-11-30',progress:100,status:'done',supervisor:'นายอรรถพล ไชยมงคล',email:'nat@mahidol.ac.th',color:'c6'},
+  {id:7,name:'นางสาวพัชรา ดีงาม',uni:'ม.สงขลานครินทร์',dept:'Marketing',start:'2025-11-01',end:'2026-01-31',progress:55,status:'active',supervisor:'นางสาวปิยะมาศ ทองดี',email:'pat@psu.ac.th',color:'c1'},
+  {id:8,name:'อภิสิทธิ์ ชัยมงคล',uni:'ม.รังสิต',dept:'Finance',start:'2025-12-01',end:'2026-03-01',progress:20,status:'active',supervisor:'นายวิชัย สุขสม',email:'api@rsu.ac.th',color:'c2'},
+];
+let hrEvaluations = [
+  {internId:1,skill:5,responsibility:4,teamwork:5,communication:4,creativity:4,evaluator:'นางสาวปิยะมาศ ทองดี'},
+  {internId:2,skill:4,responsibility:5,teamwork:4,communication:5,creativity:3,evaluator:'นางสาวปิยะมาศ ทองดี'},
+  {internId:5,skill:5,responsibility:5,teamwork:4,communication:5,creativity:5,evaluator:'นางสาวปรียา สดใส'},
+  {internId:6,skill:4,responsibility:4,teamwork:5,communication:4,creativity:4,evaluator:'นายอรรถพล ไชยมงคล'},
+];
+let hrEvalRatings = {};
+let hrFilterStatus = 'all';
+let currentHRPage = 'hr-dashboard';
+
+function launchHR() {
+  goScreen('hr');
+  const u = currentUser || { name:'HR Admin' };
+  document.getElementById('hr-ava').textContent = u.name ? u.name[0] : 'H';
+  document.getElementById('hr-uname').textContent = u.name || 'HR Admin';
+  document.getElementById('hr-intern-cnt').textContent = hrInterns.length;
+  switchHRPage('hr-dashboard');
+}
+
+function switchHRPage(name) {
+  document.querySelectorAll('#screen-hr .panel').forEach(p=>p.classList.remove('active'));
+  const panel = document.getElementById('panel-'+name);
+  if(panel) panel.classList.add('active');
+  currentHRPage = name;
+  document.querySelectorAll('#sidebar-hr .sb-item').forEach(btn=>{
+    btn.classList.remove('h-active');
+    if(btn.getAttribute('onclick')&&btn.getAttribute('onclick').includes("'"+name+"'")) btn.classList.add('h-active');
+  });
+  const titles = {'hr-dashboard':'Dashboard สถานประกอบการ','hr-interns':'นักศึกษาฝึกงาน','hr-tracking':'ติดตามความก้าวหน้า','hr-evaluation':'ประเมินผล','hr-reports':'รายงาน','hr-settings':'ตั้งค่า'};
+  document.getElementById('hr-page-title').textContent = titles[name]||name;
+  // Render content
+  if(name==='hr-dashboard') renderHRDashboard();
+  else if(name==='hr-interns') renderHRInterns();
+  else if(name==='hr-tracking') renderHRTracking();
+  else if(name==='hr-evaluation') renderHREval();
+}
+
+function hrGetStatusHtml(status) {
+  const map = {active:'<span class="status s-ok">กำลังฝึกงาน</span>',pending:'<span class="status s-warn">ต้องติดตาม</span>',review:'<span class="status s-rev">อยู่ระหว่างประเมิน</span>',done:'<span class="status s-done">เสร็จสิ้น</span>'};
+  return map[status]||'';
+}
+function hrGetProgressHtml(p) {
+  const cls = p>70?'pf-e':p>40?'pf-t':'pf-a';
+  return `<div class="pw"><div class="pb" style="flex:1;height:5px"><div class="pf ${cls}" style="width:${p}%"></div></div><span class="pt">${p}%</span></div>`;
+}
+
+function renderHRDashboard() {
+  document.getElementById('hr-stat-total').textContent = hrInterns.length;
+  document.getElementById('hr-stat-active').textContent = hrInterns.filter(i=>i.status==='active').length;
+  document.getElementById('hr-stat-pending').textContent = hrInterns.filter(i=>i.status==='pending'||i.status==='review').length;
+  // Quick table
+  const qt = document.getElementById('hr-quick-table'); if(!qt) return;
+  qt.innerHTML = hrInterns.slice(0,5).map(i=>`<tr>
+    <td><div class="nm"><div class="ava-sm ${i.color}">${i.name[0]}</div><div><div class="nm-main">${i.name}</div><div style="font-size:10px;color:var(--text2)">${i.uni}</div></div></div></td>
+    <td style="font-size:12px">${i.dept}</td><td style="font-size:12px">${i.end}</td>
+    <td>${hrGetProgressHtml(i.progress)}</td><td>${hrGetStatusHtml(i.status)}</td></tr>`).join('');
+  // Chart
+  const chart = document.getElementById('hr-chart'); if(!chart) return;
+  const data=[5,8,10,12,12,8]; const days=['ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.','ม.ค.'];
+  chart.innerHTML = data.map((v,i)=>`<div class="bc"><div class="bbar ${i%2?'bb':''}" style="height:${v/12*100}%"></div><div class="blbl">${days[i]}</div></div>`).join('');
+}
+
+function hrFilterByStatus(el, status) {
+  hrFilterStatus = status;
+  document.querySelectorAll('#panel-hr-interns .fchip').forEach(c=>c.classList.remove('fa'));
+  el.classList.add('fa');
+  renderHRInterns();
+}
+function hrFilterInterns() { renderHRInterns(); }
+
+function renderHRInterns() {
+  const search = (document.getElementById('hr-search').value||'').toLowerCase();
+  const filtered = hrInterns.filter(i=>{
+    const ms = hrFilterStatus==='all'||i.status===hrFilterStatus;
+    const mq = i.name.toLowerCase().includes(search)||i.dept.toLowerCase().includes(search)||i.uni.toLowerCase().includes(search);
+    return ms && mq;
+  });
+  const tbody = document.getElementById('hr-intern-table'); if(!tbody) return;
+  tbody.innerHTML = filtered.map(i=>`<tr>
+    <td><div class="nm"><div class="ava-sm ${i.color}">${i.name[0]}</div><div><div class="nm-main">${i.name}</div><div style="font-size:10px;color:var(--text2)">${i.email}</div></div></div></td>
+    <td style="font-size:12px">${i.uni}</td><td style="font-size:12px">${i.dept}</td>
+    <td style="font-size:12px">${i.start}</td><td style="font-size:12px">${i.end}</td>
+    <td>${hrGetProgressHtml(i.progress)}</td><td>${hrGetStatusHtml(i.status)}</td>
+    <td><div style="display:flex;gap:5px">
+      <button class="btn btn-sm btn-outline" onclick="hrOpenDetail(${i.id})">👁 ดู</button>
+      <button class="btn btn-sm btn-danger" onclick="hrDeleteIntern(${i.id})">🗑</button>
+    </div></td></tr>`).join('') || '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text3)">ไม่พบข้อมูล</td></tr>';
+}
+
+function renderHRTracking() {
+  const tbody = document.getElementById('hr-tracking-table'); if(!tbody) return;
+  const reports=[[true,true,true],[true,false,true],[true,true,false],[false,true,true],[true,true,true],[true,false,false],[true,true,true],[false,true,true]];
+  tbody.innerHTML = hrInterns.map((i,idx)=>{
+    const rep=reports[idx]||[true,true,true];
+    const icon=ok=>ok?'<span style="color:var(--emerald)">✅</span>':'<span style="color:var(--rose)">❌</span>';
+    const total=rep.filter(Boolean).length;
+    return `<tr><td><div class="nm"><div class="ava-sm ${i.color}">${i.name[0]}</div><div class="nm-main">${i.name}</div></div></td>
+    <td style="text-align:center">${icon(rep[0])}</td><td style="text-align:center">${icon(rep[1])}</td><td style="text-align:center">${icon(rep[2])}</td>
+    <td>${hrGetProgressHtml(i.progress)}</td>
+    <td style="font-size:12px;color:${total<2?'var(--amber)':'var(--text2)'}">${total<2?'⚠ ต้องติดตาม':total===3?'✓ ปกติ':'— ใกล้ครบ'}</td></tr>`;
+  }).join('');
+}
+
+function renderHREval() {
+  const tbody = document.getElementById('hr-eval-table'); if(!tbody) return;
+  const stars=n=>'⭐'.repeat(n)+'☆'.repeat(5-n);
+  tbody.innerHTML = hrEvaluations.map(e=>{
+    const intern=hrInterns.find(i=>i.id===e.internId); if(!intern) return '';
+    const avg=((e.skill+e.responsibility+e.teamwork+e.communication)/4).toFixed(1);
+    return `<tr><td><div class="nm"><div class="ava-sm ${intern.color}">${intern.name[0]}</div><div class="nm-main">${intern.name}</div></div></td>
+    <td>${stars(e.skill)}</td><td>${stars(e.responsibility)}</td><td>${stars(e.teamwork)}</td><td>${stars(e.communication)}</td>
+    <td><span style="font-weight:800;color:${parseFloat(avg)>=4.5?'var(--emerald)':'var(--blue)'}">${avg}/5</span></td>
+    <td style="font-size:11px;color:var(--text2)">${e.evaluator}</td></tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text3)">ยังไม่มีผลการประเมิน</td></tr>';
+  // Populate select
+  const sel = document.getElementById('hr-eval-intern-sel'); if(!sel) return;
+  sel.innerHTML = '<option value="">-- เลือกนักศึกษา --</option>'+hrInterns.map(i=>`<option value="${i.id}">${i.name}</option>`).join('');
+  // Criteria
+  const wrap = document.getElementById('hr-eval-criteria'); if(!wrap) return;
+  const criteria=[{key:'skill',label:'🔧 ทักษะวิชาชีพ'},{key:'responsibility',label:'📋 ความรับผิดชอบ'},{key:'teamwork',label:'🤝 การทำงานทีม'},{key:'communication',label:'💬 การสื่อสาร'},{key:'creativity',label:'💡 ความคิดสร้างสรรค์'}];
+  wrap.innerHTML = criteria.map(c=>`<div class="eval-item"><div class="eval-lbl">${c.label}</div>
+    <div class="star-grp" id="hr-stars-${c.key}">
+      ${[1,2,3,4,5].map(n=>`<button class="star-btn" data-val="${n}" onclick="setHRStar('${c.key}',${n})">★</button>`).join('')}
+      <span style="font-size:11px;color:var(--text2);margin-left:4px" id="hr-sv-${c.key}">—</span>
+    </div></div>`).join('');
+}
+
+function setHRStar(key,val) {
+  hrEvalRatings[key]=val;
+  document.querySelectorAll(`#hr-stars-${key} .star-btn`).forEach(b=>b.classList.toggle('on',parseInt(b.dataset.val)<=val));
+  document.getElementById('hr-sv-'+key).textContent=val+'/5';
+}
+
+function saveHREval() {
+  const sel=document.getElementById('hr-eval-intern-sel');
+  if(!sel.value){showToast('⚠ กรุณาเลือกนักศึกษา','err');return;}
+  hrEvaluations.push({internId:parseInt(sel.value),skill:hrEvalRatings.skill||3,responsibility:hrEvalRatings.responsibility||3,teamwork:hrEvalRatings.teamwork||3,communication:hrEvalRatings.communication||3,creativity:hrEvalRatings.creativity||3,evaluator:(currentUser&&currentUser.name)||'HR'});
+  hrEvalRatings={};
+  showToast('✅ บันทึกผลการประเมินเรียบร้อยแล้ว!');
+  switchHREvalTab('list');
+}
+
+function switchHREvalTab(tab) {
+  document.getElementById('hr-eval-list').style.display = tab==='list'?'':'none';
+  document.getElementById('hr-eval-form').style.display = tab==='form'?'':'none';
+  document.getElementById('hr-eval-tab-list').style.background = tab==='list'?'var(--indigo)':'';
+  document.getElementById('hr-eval-tab-list').style.color = tab==='list'?'#fff':'';
+  document.getElementById('hr-eval-tab-form').style.background = tab==='form'?'var(--indigo)':'';
+  document.getElementById('hr-eval-tab-form').style.color = tab==='form'?'#fff':'';
+  if(tab==='list') renderHREval();
+}
+
+function openHRAddModal() {
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('hr-ai-start').value=today;
+  document.getElementById('modal-hr-add').classList.add('open');
+}
+
+function addHRIntern() {
+  const name=document.getElementById('hr-ai-name').value.trim();
+  const uni=document.getElementById('hr-ai-uni').value.trim();
+  if(!name||!uni){showToast('⚠ กรุณากรอกชื่อและมหาวิทยาลัย','err');return;}
+  const colors=['c1','c2','c3','c4','c5','c6'];
+  hrInterns.push({id:Date.now(),name,uni,dept:document.getElementById('hr-ai-dept').value,start:document.getElementById('hr-ai-start').value,end:document.getElementById('hr-ai-end').value,progress:0,status:'active',supervisor:document.getElementById('hr-ai-sup').value,email:document.getElementById('hr-ai-email').value,color:colors[hrInterns.length%6]});
+  document.getElementById('modal-hr-add').classList.remove('open');
+  showToast('✅ เพิ่มนักศึกษาเรียบร้อยแล้ว!');
+  document.getElementById('hr-intern-cnt').textContent=hrInterns.length;
+  renderHRDashboard(); renderHRInterns();
+}
+
+function hrDeleteIntern(id) {
+  if(!confirm('ยืนยันการลบ?')) return;
+  hrInterns = hrInterns.filter(i=>i.id!==id);
+  showToast('🗑 ลบข้อมูลนักศึกษาแล้ว');
+  renderHRInterns();
+}
+
+function hrOpenDetail(id) {
+  const i=hrInterns.find(x=>x.id===id); if(!i) return;
+  showToast(`👁 ${i.name} — ${i.dept} · ความก้าวหน้า ${i.progress}%`);
+}
+
+function hrExportCSV() {
+  const headers=['ชื่อ','มหาวิทยาลัย','แผนก','เริ่ม','สิ้นสุด','ความก้าวหน้า','สถานะ'];
+  const rows=hrInterns.map(i=>[i.name,i.uni,i.dept,i.start,i.end,i.progress+'%',i.status]);
+  const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent('\uFEFF'+csv);
+  a.download='hr_interns.csv'; a.click();
+  showToast('⬇ ดาวน์โหลด CSV แล้ว!');
+}
+
+// Auto-restore session
+if(currentUser && currentRole) {
+  if(currentRole==='hr') { setTimeout(launchHR, 0); }
+  else { setTimeout(launchApp, 0); }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Set diary date default
+  const diaryDate = document.getElementById('diary-date');
+  if(diaryDate) diaryDate.value = new Date().toISOString().split('T')[0];
+  const manD = document.getElementById('man-d');
+  if(manD) manD.value = new Date().toISOString().split('T')[0];
+});
+
+// Function to update the extra field label based on the selected role
+function updateRegFields() {
+    const role = document.getElementById('r-role').value;
+    const extraFg = document.getElementById('r-extra-fg');
+    const extraLbl = document.getElementById('r-extra-lbl');
+    const extraInp = document.getElementById('r-extra');
+    
+    if (role === 'student') {
+        extraFg.style.display = 'block';
+        extraLbl.textContent = 'มหาวิทยาลัย';
+        extraInp.placeholder = 'ชื่อมหาวิทยาลัย';
+    } else if (role === 'hr') {
+        extraFg.style.display = 'block';
+        extraLbl.textContent = 'บริษัท / องค์กร';
+        extraInp.placeholder = 'ชื่อบริษัท';
+    } else {
+        // Teacher
+        extraFg.style.display = 'block';
+        extraLbl.textContent = 'คณะ / ภาควิชา';
+        extraInp.placeholder = 'ชื่อคณะ';
+    }
+}
+
+// Function to handle the registration process via Supabase
+async function doRegister() {
+    const role = document.getElementById('r-role').value;
+    const fn = document.getElementById('r-fn').value.trim();
+    const ln = document.getElementById('r-ln').value.trim();
+    const email = document.getElementById('r-email').value.trim();
+    const pw = document.getElementById('r-pw').value;
+    const extra = document.getElementById('r-extra').value.trim();
+
+    // 1. Basic Validation
+    if (!fn || !ln || !email || !pw) {
+        // Assuming you have a toast notification or you can use standard alert()
+        alert('กรุณากรอกข้อมูลบังคับให้ครบถ้วน (ชื่อ, นามสกุล, อีเมล, รหัสผ่าน)');
+        return;
+    }
+
+    if (pw.length < 6) {
+        alert('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+        return;
+    }
+
+    // 2. Register user with Supabase
+    // Note: Make sure you use 'supabaseClient' if you applied the fix from our previous step!
+    const { data, error } = await supabaseClient.auth.signUp({
+        email: email,
+        password: pw,
+        options: {
+            data: {
+                full_name: `${fn} ${ln}`,
+                role: role,
+                organization: extra
+            }
+        }
+    });
+
+    // 3. Handle response
+    if (error) {
+        alert('เกิดข้อผิดพลาดในการสมัครสมาชิก: ' + error.message);
+        return;
+    }
+
+    // Success! Switch them back to the login tab
+    alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
+    switchLoginTab('login');
+}
+// ตรวจสอบ Session ทันทีที่เปิดหน้าเว็บ
+async function checkSession() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (session) {
+        // ถ้ามี Session ใน Supabase แต่ในตัวแปร currentUser ว่าง (เกิดจากการ Refresh หน้าจอ)
+        if (!currentUser) {
+            currentUser = JSON.parse(localStorage.getItem('it_user'));
+            currentRole = localStorage.getItem('it_role');
+        }
+
+        if (currentUser) {
+            if (currentRole === 'hr') launchHR();
+            else launchApp();
+        }
+    } else {
+        // ถ้าไม่มี Session ให้เด้งไปหน้า Landing
+        goScreen('landing');
+    }
+}
+
+// เรียกใช้ฟังก์ชันตรวจสอบ
+checkSession();
+
+// เพิ่ม Listener สำหรับตรวจจับการเปลี่ยนแปลงของ Auth (เช่น ล็อกเอาท์จาก Tab อื่น)
+supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT') {
+        localStorage.clear();
+        goScreen('landing');
+    }
+});
+
+async function launchApp() {
+    goScreen('app');
+    updateUserUI();
+    buildSidebar();
+    
+    if (currentRole === 'student') {
+        await loadStudentData(); // ดึงข้อมูลจาก Supabase มาโชว์
+        switchPanel('s-dash');
+    } else {
+        // Logic สำหรับอาจารย์
+        switchPanel('t-dash');
+    }
+}
+
+// แก้ไขโค้ดส่วนตรวจสอบ Session เดิมของคุณให้เป็นแบบนี้
+async function checkUserSession() {
+    // ดึง session ปัจจุบันจาก Supabase SDK
+    const { data: { session }, error } = await supabaseClient.auth.getSession();
+
+    if (session && session.user) {
+        console.log("Session found for:", session.user.email);
+        
+        // ดึงข้อมูลที่เคยเก็บไว้ใน localStorage
+        currentUser = JSON.parse(localStorage.getItem('it_user'));
+        currentRole = localStorage.getItem('it_role');
+
+        // หากใน localStorage หายไป แต่ใน Supabase ยังอยู่ ให้สร้างใหม่จาก Metadata
+        if (!currentUser) {
+            currentUser = {
+                id: session.user.id,
+                email: session.user.email,
+                name: session.user.user_metadata.full_name || 'User'
+            };
+            currentRole = session.user.user_metadata.role || 'student';
+            localStorage.setItem('it_user', JSON.stringify(currentUser));
+            localStorage.setItem('it_role', currentRole);
+        }
+
+        // นำเข้าสู่หน้าจอที่เหมาะสม
+        if (currentRole === 'hr') {
+            launchHR();
+        } else {
+            // ฟังก์ชันเดิมที่คุณใช้เปิดหน้า Student/Teacher
+            goScreen('app');
+            updateUserUI();
+            buildSidebar();
+            if (currentRole === 'student') {
+                await loadStudentData();
+                switchPanel('s-dash');
+            } else {
+                switchPanel('t-dash');
+            }
+        }
+    } else {
+        console.log("No session found, staying on landing page.");
+        goScreen('landing');
+    }
+}
+
+// เรียกใช้ทันทีที่โหลดหน้าเว็บ
+checkUserSession();
+</script>
+  </body>
+</html>

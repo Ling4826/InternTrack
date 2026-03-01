@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="th">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="style.css">
+        <title>เข้าสู่ระบบ — InternTrack</title>
+
+    </head>
+    <body>
+        <div id="screen-landing" class="screen active">
+            <div class="land-grid"></div><div class="land-glow"></div>
+            <div class="land-content">
+                <div class="land-badge">✦ ระบบจัดการฝึกงานออนไลน์ รุ่นใหม่</div>
+                <h1 class="land-h1">ระบบฝึกงาน<br><span
+                        class="g">InternTrack</span></h1>
+                <p class="land-sub">เชื่อมต่อนักศึกษาและอาจารย์ในระบบเดียว —
+                    บันทึกประจำวัน เช็คอิน-เช็คเอาท์ ติดตามความก้าวหน้า
+                    และประเมินผล</p>
+                <div class="land-actions">
+                    <button class="btn btn-teal" onclick="goLogin()">🚀
+                        เข้าสู่ระบบ</button>
+                    <button class="btn btn-ghost"
+                        onclick="document.getElementById('feat-s').scrollIntoView({behavior:'smooth'})">ดูฟีเจอร์
+                        ↓</button>
+                </div>
+                <div class="role-label">เลือกบทบาทเพื่อเข้าสู่ระบบ</div>
+                <div class="role-cards">
+                    <a href="login.html"
+                        style="text-decoration: none; color: inherit;">
+                        <div class="role-card s">
+                            <span class="rc-icon">🎒</span>
+                            <div class="rc-title">นักศึกษา</div>
+                            <div class="rc-desc">บันทึกประจำวัน<br>เช็คเวลา
+                                ดูผลประเมิน</div>
+                        </div>
+                    </a>
+                    <a href="login.html"
+                        style="text-decoration: none; color: inherit;">
+                        <div class="role-card t">
+                            <span class="rc-icon">👨‍🏫</span>
+                            <div class="rc-title">อาจารย์</div>
+                            <div class="rc-desc">ติดตาม
+                                ตรวจบันทึก<br>ประเมินผลนักศึกษา</div>
+                        </div>
+                    </a>
+                    <a href="login.html"
+                        style="text-decoration: none; color: inherit;">
+                        <div class="role-card" onclick="goLoginAs('hr')"
+                            style="border-color:rgba(99,102,241,.3)">
+                            <span class="rc-icon">🏢</span>
+                            <div class="rc-title">สถานประกอบการ</div>
+                            <div class="rc-desc">จัดการนักศึกษา<br>ประเมิน
+                                ออกรายงาน</div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- ══ 3 LOGIN PANELS ══ -->
+                <div class="three-login-wrap" id="three-login-wrap">
+                    <!-- STUDENT LOGIN -->
+                    <div class="mini-login-card ml-student">
+                        <div class="ml-header">
+                            <span class="ml-icon">🎒</span>
+                            <div>
+                                <div class="ml-role">นักศึกษา</div>
+                                <div class="ml-sub">Student Login</div>
+                            </div>
+                        </div>
+                        <div class="ml-hint">Demo:
+                            <strong>student@test.com</strong> /
+                            <strong>1234</strong></div>
+                        <div class="ml-field"><input class="ml-input"
+                                type="email" id="ql-s-email" placeholder="อีเมล"
+                                value="student@test.com"></div>
+                        <div class="ml-field"><input class="ml-input"
+                                type="password" id="ql-s-pw"
+                                placeholder="รหัสผ่าน" value="1234"></div>
+                        <button class="ml-btn ml-btn-s"
+                            onclick="quickLogin('student')">เข้าสู่ระบบ
+                            →</button>
+                    </div>
+                    <!-- TEACHER LOGIN -->
+                    <div class="mini-login-card ml-teacher">
+                        <div class="ml-header">
+                            <span class="ml-icon">👨‍🏫</span>
+                            <div>
+                                <div class="ml-role">อาจารย์</div>
+                                <div class="ml-sub">Teacher Login</div>
+                            </div>
+                        </div>
+                        <div class="ml-hint">Demo:
+                            <strong>teacher@test.com</strong> /
+                            <strong>1234</strong></div>
+                        <div class="ml-field"><input class="ml-input"
+                                type="email" id="ql-t-email" placeholder="อีเมล"
+                                value="teacher@test.com"></div>
+                        <div class="ml-field"><input class="ml-input"
+                                type="password" id="ql-t-pw"
+                                placeholder="รหัสผ่าน" value="1234"></div>
+                        <button class="ml-btn ml-btn-t"
+                            onclick="quickLogin('teacher')">เข้าสู่ระบบ
+                            →</button>
+                    </div>
+                    <!-- HR LOGIN -->
+                    <div class="mini-login-card ml-hr">
+                        <div class="ml-header">
+                            <span class="ml-icon">🏢</span>
+                            <div>
+                                <div class="ml-role">สถานประกอบการ</div>
+                                <div class="ml-sub">Company / HR Login</div>
+                            </div>
+                        </div>
+                        <div class="ml-hint">Demo: <strong>hr@test.com</strong>
+                            / <strong>1234</strong></div>
+                        <div class="ml-field"><input class="ml-input"
+                                type="email" id="ql-h-email" placeholder="อีเมล"
+                                value="hr@test.com"></div>
+                        <div class="ml-field"><input class="ml-input"
+                                type="password" id="ql-h-pw"
+                                placeholder="รหัสผ่าน" value="1234"></div>
+                        <button class="ml-btn ml-btn-h"
+                            onclick="quickLogin('hr')">เข้าสู่ระบบ →</button>
+                    </div>
+                </div>
+                <div id="feat-s" class="feat-section">
+                    <div class="feat-label">ฟีเจอร์ครบครัน</div>
+                    <div class="feat-headline">ทุกอย่างในระบบเดียว</div>
+                    <div class="feat-grid">
+                        <div class="feat-card"><div class="fi fi-t">📝</div><div
+                                class="feat-name">บันทึกประจำวัน</div><div
+                                class="feat-desc">นักศึกษาบันทึกงาน ทักษะ และ
+                                mood ประจำวัน พร้อมทักษะที่ได้ฝึก</div></div>
+                        <div class="feat-card"><div class="fi fi-b">⏰</div><div
+                                class="feat-name">เช็คอิน-เช็คเอาท์</div><div
+                                class="feat-desc">บันทึกเวลาเข้า-ออกงาน
+                                Real-time สรุปชั่วโมงรวม
+                                เปอร์เซ็นต์เข้างาน</div></div>
+                        <div class="feat-card"><div class="fi fi-a">⭐</div><div
+                                class="feat-name">ประเมินผลด้วยดาว</div><div
+                                class="feat-desc">อาจารย์ประเมินด้วย 6
+                                เกณฑ์มาตรฐาน พร้อม feedback ละเอียด</div></div>
+                        <div class="feat-card"><div class="fi fi-e">📊</div><div
+                                class="feat-name">ติดตามความก้าวหน้า</div><div
+                                class="feat-desc">Dashboard ภาพรวม กราฟ และ
+                                Timeline การฝึกงานทุกคน</div></div>
+                        <div class="feat-card"><div class="fi fi-i">💬</div><div
+                                class="feat-name">อาจารย์ Comment</div><div
+                                class="feat-desc">อาจารย์อนุมัติบันทึก ให้
+                                comment และ feedback รายวัน</div></div>
+                        <div class="feat-card"><div class="fi fi-r">📄</div><div
+                                class="feat-name">รายงานอัตโนมัติ</div><div
+                                class="feat-desc">สรุปผลรายบุคคล รายแผนก Export
+                                ได้ทุกรูปแบบ</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>
