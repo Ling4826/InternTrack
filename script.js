@@ -1232,12 +1232,7 @@ function renderReports() {
 }
 function exportCSV() { showToast('📥 Export ข้อมูล CSV แล้ว'); }
 
-// ═══════════════════════════════════════════
-//  PROFILE
-// ═══════════════════════════════════════════
-// ═══════════════════════════════════════════
-//  PROFILE (เชื่อมต่อ Supabase)
-// ═══════════════════════════════════════════
+
 async function loadProfile() {
     if (!currentUser) return;
     
