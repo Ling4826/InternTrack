@@ -625,3 +625,41 @@ select.fi3{cursor:pointer}select.fi3 option{background:var(--surface)}
 /* responsive */
 @media(max-width:1024px){.stat-grid{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.eval-grid{grid-template-columns:1fr}.feat-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:768px){.sidebar{transform:translateX(-245px)}.sidebar.open{transform:translateX(0)}.app-main{margin-left:0}.feat-grid{grid-template-columns:1fr}.land-h1{letter-spacing:-1px}.login-wrap{grid-template-columns:1fr}.login-left{display:none}.form-row2,.form-row3,.fr{grid-template-columns:1fr}.att-grid{grid-template-columns:repeat(5,1fr)}.stat-grid{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:1fr}}
+/* ตกแต่งกล่องค้นหารายชื่อ */
+.search-results-list {
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    background: var(--surface2);
+    border: 1px solid var(--teal);
+    border-radius: 8px;
+    z-index: 100;
+    max-height: 200px; overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    margin-top: 5px;
+}
+.search-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.2s;
+    display: flex; flex-direction: column;
+}
+.search-item:hover {
+    background: rgba(0,201,167,.15);
+    padding-left: 22px; /* เอฟเฟกต์ขยับขวาเวลาเอาเมาส์ชี้ ให้รู้ว่ากดได้ */
+    border-left: 3px solid var(--teal);
+}
+
+/* ตรวจสอบใน style.css */
+.act-ico {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+.ai-t { background: rgba(0, 201, 167, 0.12); color: var(--teal); } /* สีเขียวสำหรับบันทึก */
+.ai-a { background: rgba(245, 158, 11, 0.12); color: var(--amber); } /* สีส้มสำหรับแจ้งเตือน */

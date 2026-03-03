@@ -51,7 +51,6 @@
 
         <!-- ══ 3 LOGIN PANELS ══ -->
         <div class="three-login-wrap" id="three-login-wrap">
-          <!-- STUDENT LOGIN -->
           <div class="mini-login-card ml-student">
             <div class="ml-header">
               <span class="ml-icon">🎒</span>
@@ -61,16 +60,16 @@
               </div>
             </div>
             <div class="ml-hint">Demo: <strong>student@test.com</strong> /
-              <strong>1234</strong></div>
+              <strong>123456</strong></div>
             <div class="ml-field"><input class="ml-input" type="email"
                 id="ql-s-email" placeholder="อีเมล"
                 value="student@test.com"></div>
             <div class="ml-field"><input class="ml-input" type="password"
-                id="ql-s-pw" placeholder="รหัสผ่าน" value="1234"></div>
+                id="ql-s-pw" placeholder="รหัสผ่าน" value="123456"></div>
             <button class="ml-btn ml-btn-s"
               onclick="quickLogin('student')">เข้าสู่ระบบ →</button>
           </div>
-          <!-- TEACHER LOGIN -->
+
           <div class="mini-login-card ml-teacher">
             <div class="ml-header">
               <span class="ml-icon">👨‍🏫</span>
@@ -80,16 +79,16 @@
               </div>
             </div>
             <div class="ml-hint">Demo: <strong>teacher@test.com</strong> /
-              <strong>1234</strong></div>
+              <strong>123456</strong></div>
             <div class="ml-field"><input class="ml-input" type="email"
                 id="ql-t-email" placeholder="อีเมล"
                 value="teacher@test.com"></div>
             <div class="ml-field"><input class="ml-input" type="password"
-                id="ql-t-pw" placeholder="รหัสผ่าน" value="1234"></div>
+                id="ql-t-pw" placeholder="รหัสผ่าน" value="123456"></div>
             <button class="ml-btn ml-btn-t"
               onclick="quickLogin('teacher')">เข้าสู่ระบบ →</button>
           </div>
-          <!-- HR LOGIN -->
+
           <div class="mini-login-card ml-hr">
             <div class="ml-header">
               <span class="ml-icon">🏢</span>
@@ -99,11 +98,11 @@
               </div>
             </div>
             <div class="ml-hint">Demo: <strong>hr@test.com</strong> /
-              <strong>1234</strong></div>
+              <strong>123456</strong></div>
             <div class="ml-field"><input class="ml-input" type="email"
                 id="ql-h-email" placeholder="อีเมล" value="hr@test.com"></div>
             <div class="ml-field"><input class="ml-input" type="password"
-                id="ql-h-pw" placeholder="รหัสผ่าน" value="1234"></div>
+                id="ql-h-pw" placeholder="รหัสผ่าน" value="123456"></div>
             <button class="ml-btn ml-btn-h"
               onclick="quickLogin('hr')">เข้าสู่ระบบ →</button>
           </div>
@@ -190,13 +189,7 @@
                   placeholder="••••••••"><span class="pw-eye"
                   onclick="togglePw('l-pw',this)">👁</span></div>
             </div>
-            <div class="fg"><label class="fl">บทบาท</label>
-              <select class="fi2" id="l-role">
-                <option value="student">🎒 นักศึกษา</option>
-                <option value="teacher">👨‍🏫 อาจารย์</option>
-                <option value="hr">🏢 สถานประกอบการ / HR</option>
-              </select>
-            </div>
+
             <button class="l-submit" onclick="doLogin()">เข้าสู่ระบบ →</button>
           </div>
           <!-- REGISTER -->
@@ -257,11 +250,6 @@
         <header class="topbar">
           <div class="tb-title" id="tb-title">Dashboard</div>
           <div style="display:flex;align-items:center;gap:10px">
-            <div class="tb-search"><span
-                style="font-size:13px;color:var(--text3)">🔍</span><input
-                type="text" placeholder="ค้นหา..." id="search-inp"
-                oninput="handleSearch()"></div>
-            <div class="notif-btn">🔔<div class="notif-dot"></div></div>
             <button class="btn btn-teal btn-sm" id="tb-action-btn"
               onclick="tbAction()">+ เพิ่ม</button>
           </div>
@@ -553,12 +541,6 @@
             <div class="pg-head"><h2>⭐ ผลการประเมิน</h2><p>ดูคะแนนและ feedback
                 จากอาจารย์ที่ปรึกษา</p></div>
             <div id="s-eval-wrap">
-              <div
-                style="text-align:center;padding:56px;color:var(--text3)"><div
-                  style="font-size:44px;margin-bottom:14px">📋</div><div
-                  style="font-size:14px;font-weight:600;margin-bottom:6px">ยังไม่มีผลประเมิน</div><div
-                  style="font-size:12px">อาจารย์ยังไม่ได้ประเมิน
-                  หรืออยู่ระหว่างดำเนินการ</div></div>
             </div>
           </div>
 
@@ -917,19 +899,11 @@
         </div>
       </aside>
       <div class="app-main">
-        <header class="topbar">
-          <div class="tb-title" id="hr-page-title">Dashboard</div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <div class="tb-search"><span
-                style="font-size:13px;color:var(--text3)">🔍</span><input
-                type="text" placeholder="ค้นหานักศึกษา..." id="hr-search"
-                oninput="hrFilterInterns()"></div>
-            <div class="notif-btn">🔔<div class="notif-dot"></div></div>
-            <button class="btn btn-sm" id="hr-action-btn"
-              onclick="openHRAddModal()"
-              style="background:var(--indigo);color:#fff">+
-              เพิ่มนักศึกษา</button>
-          </div>
+       <header class="topbar">
+  <div class="tb-title" id="hr-page-title">Dashboard</div>
+  <div style="display:flex;align-items:center;gap:10px">
+  </div>
+</header>
         </header>
         <div class="content-area" id="hr-content-area">
 
@@ -989,6 +963,7 @@
                     นักศึกษาฝึกงานรายเดือน</div></div>
                 <div class="card-body">
                   <div class="bar-chart" id="hr-chart"></div>
+
                   <div
                     style="margin-top:16px;display:flex;gap:16px;font-size:11px;color:var(--text2)"><span>📊
                       ส.ค. · ก.ย. · ต.ค. · พ.ย. · ธ.ค. · ม.ค.</span></div>
@@ -1316,56 +1291,84 @@
     </div>
 
     <!-- MODAL: ADD INTERN -->
-    <div class="modal-overlay" id="modal-add-intern" onclick="closeModal('modal-add-intern',event)">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-title">+ เพิ่มนักศึกษาในการดูแล</div>
-      <button class="modal-close" onclick="closeModalById('modal-add-intern')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="fg">
-        <label class="fl2">ค้นหาชื่อนักศึกษา (ที่สมัครสมาชิกแล้ว) <span style="color:var(--rose)">*</span></label>
-        <div style="position:relative">
-          <input class="fi3" id="t-search-input" type="text" placeholder="พิมพ์ชื่อนักศึกษาเพื่อค้นหา..." oninput="searchStudentForTeacher(this.value)">
-          <div id="t-search-results" class="search-results-list" style="display:none"></div>
+    <div class="modal-overlay" id="modal-add-intern"
+      onclick="closeModal('modal-add-intern',event)">
+      <div class="modal">
+        <div class="modal-head">
+          <div class="modal-title">+ เพิ่มนักศึกษาในการดูแล</div>
+          <button class="modal-close"
+            onclick="closeModalById('modal-add-intern')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="fg">
+            <label class="fl2">ค้นหาชื่อนักศึกษา (ที่สมัครสมาชิกแล้ว) <span
+                style="color:var(--rose)">*</span></label>
+            <div style="position:relative">
+              <input class="fi3" id="t-search-input" type="text"
+                placeholder="🔍 พิมพ์ชื่อ... (แล้วคลิกเลือกรายชื่อที่ปรากฏด้านล่าง)"
+                oninput="searchStudentForTeacher(this.value)"
+                style="border-color:var(--teal)">
+              <div style="font-size:11px; color:var(--text3); margin-top:6px;">*
+                พิมพ์ชื่ออย่างน้อย 2 ตัวอักษร แล้วคลิกเลือกจากผลลัพธ์</div>
+              <div id="t-search-results" class="search-results-list"
+                style="display:none"></div>
+            </div>
+          </div>
+
+          <div class="form-row2" style="margin-top:15px">
+            <div class="fg">
+              <label class="fl2">ชื่อนักศึกษา <span
+                  style="color:var(--text3);text-transform:none;">(ดึงอัตโนมัติ)</span></label>
+              <input class="fi3" id="ai-name" type="text"
+                placeholder="รอการเลือก..." disabled
+                style="background:rgba(255,255,255,0.02); border: 1px dashed var(--border2); color:var(--text3); cursor:not-allowed;">
+            </div>
+            <div class="fg">
+              <label class="fl2">อีเมล <span
+                  style="color:var(--text3);text-transform:none;">(ดึงอัตโนมัติ)</span></label>
+              <input class="fi3" id="ai-email" type="text"
+                placeholder="รอการเลือก..." disabled
+                style="background:rgba(255,255,255,0.02); border: 1px dashed var(--border2); color:var(--text3); cursor:not-allowed;">
+            </div>
+          </div>
+
+          <div class="form-row2">
+            <div class="fg">
+              <label class="fl2">มหาวิทยาลัย</label>
+              <input class="fi3" id="ai-uni" type="text"
+                placeholder="ระบุมหาวิทยาลัย">
+            </div>
+            <div class="fg">
+              <label class="fl2">แผนก</label>
+              <select class="fi3" id="ai-dept">
+                <option>IT / Development</option>
+                <option>Marketing</option>
+                <option>Finance</option>
+                <option>HR / Admin</option>
+                <option>Operations</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row2">
+            <div class="fg"><label class="fl2">วันเริ่ม <span
+                  style="color:var(--rose)">*</span></label><input class="fi3"
+                id="ai-start" type="date"></div>
+            <div class="fg"><label class="fl2">วันสิ้นสุด <span
+                  style="color:var(--rose)">*</span></label><input class="fi3"
+                id="ai-end" type="date"></div>
+          </div>
+
+          <input type="hidden" id="ai-selected-id">
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline btn-sm"
+            onclick="closeModalById('modal-add-intern')">ยกเลิก</button>
+          <button class="btn btn-blue" onclick="addInternConfirm()">✅
+            ยืนยันเพิ่มนักศึกษา</button>
         </div>
       </div>
-
-      <div class="form-row2" style="margin-top:15px">
-        <div class="fg"><label class="fl2">ชื่อนักศึกษา</label><input class="fi3" id="ai-name" type="text" readonly style="background:var(--surface2)"></div>
-        <div class="fg"><label class="fl2">อีเมล</label><input class="fi3" id="ai-email" type="text" readonly style="background:var(--surface2)"></div>
-      </div>
-
-      <div class="form-row2">
-        <div class="fg">
-          <label class="fl2">มหาวิทยาลัย</label>
-          <input class="fi3" id="ai-uni" type="text" placeholder="ระบุมหาวิทยาลัย">
-        </div>
-        <div class="fg">
-          <label class="fl2">แผนก</label>
-          <select class="fi3" id="ai-dept">
-            <option>IT / Development</option>
-            <option>Marketing</option>
-            <option>Finance</option>
-            <option>HR / Admin</option>
-            <option>Operations</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-row2">
-        <div class="fg"><label class="fl2">วันเริ่ม</label><input class="fi3" id="ai-start" type="date"></div>
-        <div class="fg"><label class="fl2">วันสิ้นสุด</label><input class="fi3" id="ai-end" type="date"></div>
-      </div>
-      
-      <input type="hidden" id="ai-selected-id">
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline btn-sm" onclick="closeModalById('modal-add-intern')">ยกเลิก</button>
-      <button class="btn btn-blue" onclick="addInternConfirm()">✅ ยืนยันเพิ่มนักศึกษา</button>
-    </div>
-  </div>
-</div>
 
     <div class="toast" id="toast"></div>
     <script src="script.js"></script>
